@@ -71,59 +71,60 @@ const TributarIA = () => {
         ));
       }
       
-      // Armazena a mensagem atual antes de limpar o campo
+      // Salva a mensagem atual antes de limpar o campo
       const messageToSend = currentMessage;
       
       // Limpa o campo de entrada
       setCurrentMessage('');
       
-      // Simula uma resposta do sistema (para fins de demonstração)
+      // Inicia o estado de carregamento
       setIsLoading(true);
       
-      // Simula tempo de resposta
-      setTimeout(() => {
-        // Cria um objeto de resposta simulada
-        let botResponseText;
-        
-        // Respostas personalizadas baseadas na mensagem
-        const lowerMessage = messageToSend.toLowerCase();
-        
-        if (lowerMessage.includes("pis") || lowerMessage.includes("cofins")) {
-          botResponseText = "Na reforma tributária, o PIS e COFINS serão substituídos pela CBS (Contribuição sobre Bens e Serviços). A CBS terá alíquota única e não-cumulativa, simplificando o sistema atual. A transição está prevista para ocorrer gradualmente, com início em 2026.";
-        } 
-        else if (lowerMessage.includes("ibs") || lowerMessage.includes("imposto seletivo")) {
-          botResponseText = "O Imposto sobre Bens e Serviços (IBS) terá uma alíquota de referência que deve ficar entre 25% e 27%, segundo estudos iniciais. Esta alíquota substituirá ICMS e ISS, e será definida por lei complementar ainda em discussão.";
-        }
-        else if (lowerMessage.includes("cronograma") || lowerMessage.includes("quando") || lowerMessage.includes("vigência")) {
-          botResponseText = "A implementação da reforma tributária seguirá um cronograma gradual. A partir de 2026, começará a fase de teste com alíquota de 1%. Entre 2027 e 2033, ocorrerá a transição, com redução gradual dos impostos atuais e aumento das novas contribuições. A implementação completa está prevista para 2033.";
-        }
-        else if (lowerMessage.includes("cbs")) {
-          botResponseText = "A CBS (Contribuição sobre Bens e Serviços) substituirá o PIS e COFINS no novo sistema tributário. Sua alíquota exata ainda será definida por lei complementar, mas estudos preliminares estimam que ficará entre 8% e 10%. O valor final dependerá de diversas variáveis, incluindo possíveis exceções e regimes diferenciados.";
-        }
-        else if (lowerMessage.includes("alíquota")) {
-          botResponseText = "A reforma tributária prevê diferentes alíquotas: a CBS (substituindo PIS/COFINS) deve ficar entre 8% e 10%, enquanto o IBS (substituindo ICMS e ISS) deve ter alíquota entre 25% e 27%. Existirão também regimes diferenciados com alíquotas reduzidas para setores específicos.";
-        }
-        else {
-          botResponseText = "A reforma tributária brasileira visa simplificar o sistema atual, substituindo diversos tributos por três novos: a CBS (Contribuição sobre Bens e Serviços), o IBS (Imposto sobre Bens e Serviços) e o Imposto Seletivo. A implementação será gradual, com início em 2026 e conclusão prevista para 2033. Poderia especificar qual aspecto da reforma tributária você gostaria de saber mais?";
-        }
-        
-        // Cria objeto de mensagem do bot
-        const botMessage = {
-          id: Date.now(),
-          sender: 'bot',
-          text: botResponseText,
-          timestamp: new Date().toLocaleString('pt-BR')
-        };
-        
-        // Adiciona resposta do bot ao histórico
-        setChatHistory(prev => [...prev, botMessage]);
-        setIsLoading(false);
-      }, 1500);
+      // Dados a serem enviados para o webhook
+      const payload = {
+        user_id: username,
+        chat_id: activeChat ? activeChat.id : Date.now(),
+        message: messageToSend,
+        timestamp: new Date().toISOString()
+      };
       
-      // Registra no console que estamos usando um modo simulado
-      console.log("Modo demonstração: Simulando resposta local devido a restrições de CSP");
-      console.log("Mensagem enviada:", messageToSend);
+      console.log("Enviando mensagem para webhook:", WEBHOOK_URL);
+      console.log("Payload:", payload);
       
+      // Envia requisição para o webhook
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      console.log("Status da resposta:", response.status);
+      
+      if (!response.ok) {
+        throw new Error(`Erro na solicitação: ${response.status}`);
+      }
+      
+      // Processa a resposta do webhook
+      const responseData = await response.json();
+      console.log("Resposta recebida:", responseData);
+      
+      // Obtém o texto da resposta
+      const botResponseText = responseData.response || responseData.message || 
+        "Não foi possível obter uma resposta específica do sistema.";
+      
+      // Cria objeto de mensagem do bot
+      const botMessage = {
+        id: Date.now() + 1,
+        sender: 'bot',
+        text: botResponseText,
+        timestamp: new Date().toLocaleString('pt-BR')
+      };
+      
+      // Adiciona resposta do bot ao histórico
+      setChatHistory(prev => [...prev, botMessage]);
     } catch (error) {
       console.error("Erro ao processar mensagem:", error);
       
@@ -131,11 +132,12 @@ const TributarIA = () => {
       const errorMessage = {
         id: Date.now() + 1,
         sender: 'bot',
-        text: "Ocorreu um erro ao processar sua mensagem. Por favor, tente novamente mais tarde.",
+        text: "Estamos enfrentando dificuldades técnicas. Como alternativa, sugiro consultar o site da Receita Federal para informações oficiais sobre a reforma tributária.",
         timestamp: new Date().toLocaleString('pt-BR')
       };
       
       setChatHistory(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
     }
   };
