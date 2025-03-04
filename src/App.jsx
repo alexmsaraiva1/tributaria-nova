@@ -80,6 +80,21 @@ const TributarIA = () => {
       // Inicia o estado de carregamento
       setIsLoading(true);
       
+      // Cria um ID de mensagem único para esta conversa
+      const messageId = Date.now();
+      
+      // Cria uma mensagem vazia do bot para começar
+      const initialBotMessage = {
+        id: messageId,
+        sender: 'bot',
+        text: "",
+        timestamp: new Date().toLocaleString('pt-BR'),
+        isComplete: false
+      };
+      
+      // Adiciona a mensagem inicial vazia do bot
+      setChatHistory(prev => [...prev, initialBotMessage]);
+      
       // Dados a serem enviados para o webhook
       const payload = {
         user_id: username,
@@ -91,40 +106,107 @@ const TributarIA = () => {
       console.log("Enviando mensagem para webhook:", WEBHOOK_URL);
       console.log("Payload:", payload);
       
-      // Envia requisição para o webhook
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+      // Mantenha um contador de partes recebidas
+      let partCounter = 0;
       
-      console.log("Status da resposta:", response.status);
-      
-      if (!response.ok) {
-        throw new Error(`Erro na solicitação: ${response.status}`);
-      }
-      
-      // Processa a resposta do webhook
-      const responseData = await response.json();
-      console.log("Resposta recebida:", responseData);
-      
-      // Obtém o texto da resposta
-      const botResponseText = responseData.response || responseData.message || 
-        "Não foi possível obter uma resposta específica do sistema.";
-      
-      // Cria objeto de mensagem do bot
-      const botMessage = {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: botResponseText,
-        timestamp: new Date().toLocaleString('pt-BR')
+      // Função para processar cada parte da resposta
+      const processResponsePart = async (response) => {
+        try {
+          // Verifica se a resposta é válida
+          if (!response.ok) {
+            throw new Error(`Erro na solicitação: ${response.status}`);
+          }
+          
+          // Processa a resposta do webhook
+          const responseData = await response.json();
+          console.log(`Parte ${partCounter + 1} recebida:`, responseData);
+          
+          // Obtém o texto da resposta
+          const partText = responseData.response || responseData.message || "";
+          const isLastPart = responseData.isLastPart === true;
+          
+          // Atualiza a mensagem do bot no histórico, adicionando o novo texto
+          setChatHistory(prev => 
+            prev.map(msg => 
+              msg.id === messageId 
+                ? { 
+                    ...msg, 
+                    text: msg.text + partText,
+                    isComplete: isLastPart 
+                  }
+                : msg
+            )
+          );
+          
+          // Incrementa o contador de partes
+          partCounter++;
+          
+          // Se não for a última parte, faz uma nova solicitação
+          if (!isLastPart) {
+            // Prepara o payload para a próxima parte
+            const nextPartPayload = {
+              ...payload,
+              partNumber: partCounter,
+              continuationToken: responseData.continuationToken
+            };
+            
+            // Faz a solicitação para a próxima parte
+            const nextPartResponse = await fetch(WEBHOOK_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify(nextPartPayload)
+            });
+            
+            // Processa a próxima parte recursivamente
+            await processResponsePart(nextPartResponse);
+          } else {
+            // Quando terminar todas as partes
+            setIsLoading(false);
+          }
+        } catch (error) {
+          console.error(`Erro ao processar parte ${partCounter + 1}:`, error);
+          handleErrorResponse();
+        }
       };
       
-      // Adiciona resposta do bot ao histórico
-      setChatHistory(prev => [...prev, botMessage]);
+      // Função para lidar com respostas de erro
+      const handleErrorResponse = () => {
+        // Atualiza a mensagem do bot no histórico para mostrar o erro
+        setChatHistory(prev => 
+          prev.map(msg => 
+            msg.id === messageId 
+              ? { 
+                  ...msg, 
+                  text: msg.text || "Estamos enfrentando dificuldades técnicas. Como alternativa, sugiro consultar o site da Receita Federal para informações oficiais sobre a reforma tributária.",
+                  isComplete: true 
+                }
+              : msg
+          )
+        );
+        
+        setIsLoading(false);
+      };
+      
+      // Inicia o processo com a primeira solicitação
+      try {
+        const initialResponse = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        await processResponsePart(initialResponse);
+      } catch (error) {
+        console.error("Erro na solicitação inicial:", error);
+        handleErrorResponse();
+      }
+      
     } catch (error) {
       console.error("Erro ao processar mensagem:", error);
       
@@ -133,11 +215,11 @@ const TributarIA = () => {
         id: Date.now() + 1,
         sender: 'bot',
         text: "Estamos enfrentando dificuldades técnicas. Como alternativa, sugiro consultar o site da Receita Federal para informações oficiais sobre a reforma tributária.",
-        timestamp: new Date().toLocaleString('pt-BR')
+        timestamp: new Date().toLocaleString('pt-BR'),
+        isComplete: true
       };
       
       setChatHistory(prev => [...prev, errorMessage]);
-    } finally {
       setIsLoading(false);
     }
   };
