@@ -80,70 +80,72 @@ const TributarIA = () => {
       // Inicia o estado de carregamento
       setIsLoading(true);
       
-      // Cria um ID de mensagem único para esta conversa
-      const botMessageId = Date.now();
-      
-      // Adiciona a mensagem do bot vazia inicialmente
-      setChatHistory(prev => [...prev, {
-        id: botMessageId,
-        sender: 'bot',
-        text: "",
-        timestamp: new Date().toLocaleString('pt-BR')
-      }]);
-      
       // Dados a serem enviados para o webhook
       const payload = {
         user_id: username,
         chat_id: activeChat ? activeChat.id : Date.now(),
         message: messageToSend,
-        timestamp: new Date().toISOString(),
-        isFirstRequest: true // Indica que é a primeira requisição
+        timestamp: new Date().toISOString()
       };
       
-      // Faz a requisição para o webhook
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+      console.log("Enviando mensagem para webhook:", WEBHOOK_URL);
       
-      // Processa a resposta
-      const responseData = await response.json();
-      
-      // Verifica se a resposta foi bem-sucedida
-      if (response.ok) {
-        // Adiciona a parte da resposta ao texto da mensagem do bot
-        setChatHistory(prev => 
-          prev.map(msg => 
-            msg.id === botMessageId 
-              ? {
-                  ...msg,
-                  text: responseData.message || ""
-                }
-              : msg
-          )
-        );
+      try {
+        // Faz a requisição para o webhook
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
         
-        // Se for a última parte, encerra
-        // Caso contrário, continuamos solicitando as próximas partes
-        if (responseData.isLastPart !== true) {
-          console.log("Resposta parcial recebida, aguardando próxima parte");
-        } else {
-          console.log("Última parte recebida, finalizando");
+        if (!response.ok) {
+          throw new Error(`Erro na solicitação: ${response.status}`);
         }
-      } else {
-        throw new Error(`Erro na solicitação: ${response.status}`);
+        
+        // Processa a resposta do webhook
+        let responseData = await response.json();
+        console.log("Resposta recebida:", responseData);
+        
+        // Verifica se a resposta é um array e pega o primeiro item
+        if (Array.isArray(responseData)) {
+          responseData = responseData[0];
+        }
+        
+        // Obtém o texto da resposta
+        const botResponseText = responseData.message || "Não foi possível obter uma resposta específica.";
+        
+        // Cria objeto de mensagem do bot
+        const botMessage = {
+          id: Date.now(),
+          sender: 'bot',
+          text: botResponseText,
+          timestamp: new Date().toLocaleString('pt-BR')
+        };
+        
+        // Adiciona resposta do bot ao histórico
+        setChatHistory(prev => [...prev, botMessage]);
+        
+        // Verifica se é a última parte
+        const isLastPart = responseData.isLastPart === true;
+        console.log("É a última parte:", isLastPart);
+        
+      } catch (error) {
+        console.error("Erro ao processar resposta:", error);
+        handleErrorResponse();
       }
       
-      // Encerra o estado de carregamento
-      setIsLoading(false);
     } catch (error) {
       console.error("Erro ao processar mensagem:", error);
-      
-      // Adiciona mensagem de erro ao histórico
+      handleErrorResponse();
+    } finally {
+      setIsLoading(false);
+    }
+    
+    // Função para lidar com respostas de erro
+    function handleErrorResponse() {
       const errorMessage = {
         id: Date.now(),
         sender: 'bot',
@@ -152,7 +154,6 @@ const TributarIA = () => {
       };
       
       setChatHistory(prev => [...prev, errorMessage]);
-      setIsLoading(false);
     }
   };
   
