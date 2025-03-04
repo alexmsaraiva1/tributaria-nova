@@ -81,142 +81,74 @@ const TributarIA = () => {
       setIsLoading(true);
       
       // Cria um ID de mensagem único para esta conversa
-      const messageId = Date.now();
+      const botMessageId = Date.now();
       
-      // Cria uma mensagem vazia do bot para começar
-      const initialBotMessage = {
-        id: messageId,
+      // Adiciona a mensagem do bot vazia inicialmente
+      setChatHistory(prev => [...prev, {
+        id: botMessageId,
         sender: 'bot',
         text: "",
-        timestamp: new Date().toLocaleString('pt-BR'),
-        isComplete: false
-      };
-      
-      // Adiciona a mensagem inicial vazia do bot
-      setChatHistory(prev => [...prev, initialBotMessage]);
+        timestamp: new Date().toLocaleString('pt-BR')
+      }]);
       
       // Dados a serem enviados para o webhook
       const payload = {
         user_id: username,
         chat_id: activeChat ? activeChat.id : Date.now(),
         message: messageToSend,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        isFirstRequest: true // Indica que é a primeira requisição
       };
       
-      console.log("Enviando mensagem para webhook:", WEBHOOK_URL);
-      console.log("Payload:", payload);
+      // Faz a requisição para o webhook
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
       
-      // Mantenha um contador de partes recebidas
-      let partCounter = 0;
+      // Processa a resposta
+      const responseData = await response.json();
       
-      // Função para processar cada parte da resposta
-      const processResponsePart = async (response) => {
-        try {
-          // Verifica se a resposta é válida
-          if (!response.ok) {
-            throw new Error(`Erro na solicitação: ${response.status}`);
-          }
-          
-          // Processa a resposta do webhook
-          const responseData = await response.json();
-          console.log(`Parte ${partCounter + 1} recebida:`, responseData);
-          
-          // Obtém o texto da resposta
-          const partText = responseData.response || responseData.message || "";
-          const isLastPart = responseData.isLastPart === true;
-          
-          // Atualiza a mensagem do bot no histórico, adicionando o novo texto
-          setChatHistory(prev => 
-            prev.map(msg => 
-              msg.id === messageId 
-                ? { 
-                    ...msg, 
-                    text: msg.text + partText,
-                    isComplete: isLastPart 
-                  }
-                : msg
-            )
-          );
-          
-          // Incrementa o contador de partes
-          partCounter++;
-          
-          // Se não for a última parte, faz uma nova solicitação
-          if (!isLastPart) {
-            // Prepara o payload para a próxima parte
-            const nextPartPayload = {
-              ...payload,
-              partNumber: partCounter,
-              continuationToken: responseData.continuationToken
-            };
-            
-            // Faz a solicitação para a próxima parte
-            const nextPartResponse = await fetch(WEBHOOK_URL, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify(nextPartPayload)
-            });
-            
-            // Processa a próxima parte recursivamente
-            await processResponsePart(nextPartResponse);
-          } else {
-            // Quando terminar todas as partes
-            setIsLoading(false);
-          }
-        } catch (error) {
-          console.error(`Erro ao processar parte ${partCounter + 1}:`, error);
-          handleErrorResponse();
-        }
-      };
-      
-      // Função para lidar com respostas de erro
-      const handleErrorResponse = () => {
-        // Atualiza a mensagem do bot no histórico para mostrar o erro
+      // Verifica se a resposta foi bem-sucedida
+      if (response.ok) {
+        // Adiciona a parte da resposta ao texto da mensagem do bot
         setChatHistory(prev => 
           prev.map(msg => 
-            msg.id === messageId 
-              ? { 
-                  ...msg, 
-                  text: msg.text || "Estamos enfrentando dificuldades técnicas. Como alternativa, sugiro consultar o site da Receita Federal para informações oficiais sobre a reforma tributária.",
-                  isComplete: true 
+            msg.id === botMessageId 
+              ? {
+                  ...msg,
+                  text: responseData.message || ""
                 }
               : msg
           )
         );
         
-        setIsLoading(false);
-      };
-      
-      // Inicia o processo com a primeira solicitação
-      try {
-        const initialResponse = await fetch(WEBHOOK_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        });
-        
-        await processResponsePart(initialResponse);
-      } catch (error) {
-        console.error("Erro na solicitação inicial:", error);
-        handleErrorResponse();
+        // Se for a última parte, encerra
+        // Caso contrário, continuamos solicitando as próximas partes
+        if (responseData.isLastPart !== true) {
+          console.log("Resposta parcial recebida, aguardando próxima parte");
+        } else {
+          console.log("Última parte recebida, finalizando");
+        }
+      } else {
+        throw new Error(`Erro na solicitação: ${response.status}`);
       }
       
+      // Encerra o estado de carregamento
+      setIsLoading(false);
     } catch (error) {
       console.error("Erro ao processar mensagem:", error);
       
       // Adiciona mensagem de erro ao histórico
       const errorMessage = {
-        id: Date.now() + 1,
+        id: Date.now(),
         sender: 'bot',
         text: "Estamos enfrentando dificuldades técnicas. Como alternativa, sugiro consultar o site da Receita Federal para informações oficiais sobre a reforma tributária.",
-        timestamp: new Date().toLocaleString('pt-BR'),
-        isComplete: true
+        timestamp: new Date().toLocaleString('pt-BR')
       };
       
       setChatHistory(prev => [...prev, errorMessage]);
