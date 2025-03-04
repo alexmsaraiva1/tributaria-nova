@@ -327,8 +327,8 @@ const TributarIA = () => {
                     <div className="text-xs text-gray-500">Iniciado em {activeChat.date}</div>
                   </div>
                   
-                  <div className="flex-1 overflow-y-auto p-4 absolute inset-x-0 top-[60px] bottom-[70px]">
-                    {chatHistory.length === 0 ? (
+                  <div className="flex-1 overflow-y-auto p-4 pb-24 absolute inset-x-0 top-[60px] bottom-0">
+                   {chatHistory.length === 0 ? (
                       <div className="flex items-center justify-center h-full text-gray-500">
                         Digite uma mensagem para iniciar a conversa
                       </div>
@@ -377,8 +377,8 @@ const TributarIA = () => {
                     )}
                   </div>
                   
-                  <div className="p-4 border-t border-gray-200 bg-white absolute bottom-0 left-0 right-0">
-                    <div className="flex">
+                  <div className="p-4 border-t border-gray-200 bg-white fixed bottom-0 left-0 right-0 z-20">
+                    <div className="flex max-w-screen-md mx-auto">
                       <input
                         type="text"
                         className="flex-1 p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
