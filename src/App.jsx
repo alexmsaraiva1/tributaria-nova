@@ -41,8 +41,6 @@ const TributarIA = () => {
     setActiveChat(null);
   };
   
-  // Função removida e integrada diretamente no handleSendMessage
-  
   const handleSendMessage = async () => {
     if (!currentMessage.trim() || isLoading) return;
     
@@ -197,7 +195,7 @@ const TributarIA = () => {
   };
   
   return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+    <div className="flex flex-col h-[100vh] bg-gray-50 overflow-hidden fixed inset-0">
       {!loggedIn ? (
         // Tela de login
         <div className="flex flex-col items-center justify-center h-full p-4">
@@ -252,7 +250,7 @@ const TributarIA = () => {
         // Interface principal do app
         <div className="flex flex-col h-full">
           {/* Header */}
-          <header className="bg-blue-600 text-white p-4 shadow-md">
+          <header className="bg-blue-600 text-white p-4 shadow-md w-full z-10">
             <div className="flex justify-between items-center">
               <div className="flex items-center">
                 <button 
@@ -280,7 +278,7 @@ const TributarIA = () => {
           </header>
           
           {/* Conteúdo principal */}
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex flex-1 overflow-hidden relative w-full">
             {/* Sidebar */}
             <aside 
               className={`w-64 bg-white border-r border-gray-200 flex-shrink-0 flex flex-col ${
@@ -321,15 +319,15 @@ const TributarIA = () => {
             </aside>
             
             {/* Área de chat */}
-            <main className="flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 flex flex-col overflow-hidden relative h-full">
               {activeChat ? (
                 <>
-                  <div className="p-3 border-b border-gray-200">
+                  <div className="p-3 border-b border-gray-200 sticky top-0 bg-white z-10">
                     <h2 className="font-medium">{activeChat.title}</h2>
                     <div className="text-xs text-gray-500">Iniciado em {activeChat.date}</div>
                   </div>
                   
-                  <div className="flex-1 overflow-y-auto p-4">
+                  <div className="flex-1 overflow-y-auto p-4 absolute inset-x-0 top-[60px] bottom-[70px]">
                     {chatHistory.length === 0 ? (
                       <div className="flex items-center justify-center h-full text-gray-500">
                         Digite uma mensagem para iniciar a conversa
@@ -379,7 +377,7 @@ const TributarIA = () => {
                     )}
                   </div>
                   
-                  <div className="p-4 border-t border-gray-200 bg-white fixed bottom-0 left-0 right-0 md:static">
+                  <div className="p-4 border-t border-gray-200 bg-white absolute bottom-0 left-0 right-0">
                     <div className="flex">
                       <input
                         type="text"

@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Adicione a um arquivo CSS ou como estilo inline */
+/* Estilos para o conteúdo markdown */
 .markdown-content h3 {
   font-size: 1.25rem;
   font-weight: bold;
@@ -59,4 +59,30 @@
 .markdown-content code {
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* Correções para viewport móvel */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  overscroll-behavior: none;
+}
+
+/* Para garantir que o iOS Safari se comporte corretamente */
+#root {
+  height: 100%;
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Evitar que o teclado móvel cause scrolling indesejado */
+@media (max-height: 500px) {
+  .flex-1.overflow-y-auto {
+    max-height: 50vh;
+  }
 }
