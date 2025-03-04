@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { MessageSquareText, Menu, LogIn, UserCircle, Send, PlusCircle, LogOut } from 'lucide-react';
 
 const TributarIA = () => {
@@ -114,23 +115,27 @@ const TributarIA = () => {
           responseData = responseData[0];
         }
         
-        // Obtém o texto da resposta
-        const botResponseText = responseData.message || "Não foi possível obter uma resposta específica.";
+        // Processa a mensagem, que pode ser uma string ou um array de strings
+        let botResponseText = "";
+        
+        if (Array.isArray(responseData.message)) {
+          // Junta todas as partes da mensagem
+          botResponseText = responseData.message.join('\n\n');
+        } else {
+          botResponseText = responseData.message || "Não foi possível obter uma resposta específica.";
+        }
         
         // Cria objeto de mensagem do bot
         const botMessage = {
           id: Date.now(),
           sender: 'bot',
           text: botResponseText,
-          timestamp: new Date().toLocaleString('pt-BR')
+          timestamp: new Date().toLocaleString('pt-BR'),
+          isMarkdown: true  // Flag para indicar que o texto contém markdown
         };
         
         // Adiciona resposta do bot ao histórico
         setChatHistory(prev => [...prev, botMessage]);
-        
-        // Verifica se é a última parte
-        const isLastPart = responseData.isLastPart === true;
-        console.log("É a última parte:", isLastPart);
         
       } catch (error) {
         console.error("Erro ao processar resposta:", error);
