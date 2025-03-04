@@ -336,26 +336,34 @@ const TributarIA = () => {
                       </div>
                     ) : (
                       chatHistory.map((message) => (
-                        <div 
-                          key={message.id} 
-                          className={`mb-4 max-w-3xl ${
-                            message.sender === 'user' ? 'ml-auto' : 'mr-auto'
-                          }`}
-                        >
-                          <div className={`p-3 rounded-lg ${
-                            message.sender === 'user' 
-                              ? 'bg-blue-600 text-white rounded-br-none' 
-                              : 'bg-gray-200 text-gray-800 rounded-bl-none'
-                          }`}>
-                            {message.text}
-                          </div>
-                          <div className={`text-xs mt-1 ${
-                            message.sender === 'user' ? 'text-right' : ''
-                          } text-gray-500`}>
-                            {message.timestamp}
-                          </div>
+                      <div 
+                        key={message.id} 
+                        className={`mb-4 max-w-3xl ${
+                          message.sender === 'user' ? 'ml-auto' : 'mr-auto'
+                        }`}
+                      >
+                        <div className={`p-3 rounded-lg ${
+                          message.sender === 'user' 
+                            ? 'bg-blue-600 text-white rounded-br-none' 
+                            : 'bg-gray-200 text-gray-800 rounded-bl-none'
+                        }`}>
+                          {message.isMarkdown ? (
+                            <div className="markdown-content">
+                              <ReactMarkdown>
+                                {message.text}
+                              </ReactMarkdown>
+                            </div>
+                          ) : (
+                            message.text
+                          )}
                         </div>
-                      ))
+                        <div className={`text-xs mt-1 ${
+                          message.sender === 'user' ? 'text-right' : ''
+                        } text-gray-500`}>
+                          {message.timestamp}
+                        </div>
+                      </div>
+                    ))
                     )}
                     {isLoading && (
                       <div className="mb-4 max-w-3xl mr-auto">
