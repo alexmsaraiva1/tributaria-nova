@@ -197,7 +197,7 @@ const TributarIA = () => {
   };
   
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
       {!loggedIn ? (
         // Tela de login
         <div className="flex flex-col items-center justify-center h-full p-4">
@@ -296,7 +296,7 @@ const TributarIA = () => {
                   Nova conversa
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto p-4 pb-16 md:pb-4">
                 <div className="p-2">
                   <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Conversas recentes</h2>
                   {conversations.length === 0 ? (
@@ -338,7 +338,7 @@ const TributarIA = () => {
                       chatHistory.map((message) => (
                       <div 
                         key={message.id} 
-                        className={`mb-4 max-w-3xl ${
+                        className={`mb-4 max-w-[85%] sm:max-w-3xl ${
                           message.sender === 'user' ? 'ml-auto' : 'mr-auto'
                         }`}
                       >
@@ -379,7 +379,7 @@ const TributarIA = () => {
                     )}
                   </div>
                   
-                  <div className="p-4 border-t border-gray-200">
+                  <div className="p-4 border-t border-gray-200 bg-white fixed bottom-0 left-0 right-0 md:static">
                     <div className="flex">
                       <input
                         type="text"
