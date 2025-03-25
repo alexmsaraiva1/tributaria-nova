@@ -61,8 +61,8 @@
   word-break: break-word;
 }
 
-/* Correções para viewport móvel */
-html, body {
+/* Correções para viewport móvel - apenas para o app */
+.app-container {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -74,10 +74,33 @@ html, body {
 
 /* Para garantir que o iOS Safari se comporte corretamente */
 #root {
-  height: 100%;
-  position: fixed;
-  width: 100%;
-  overflow: hidden;
+  min-height: 100%;
+}
+
+/* Estilos específicos para Landing Page */
+.landing-page {
+  scroll-behavior: smooth;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.75rem !important;
+  }
+  
+  h2 {
+    font-size: 1.5rem !important;
+  }
+  
+  h3 {
+    font-size: 1.25rem !important;
+  }
+  
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
 }
 
 /* Evitar que o teclado móvel cause scrolling indesejado */
@@ -94,4 +117,26 @@ html, body {
   z-index: 9999 !important;
   background-color: white !important;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Animações para elementos da landing page */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-400 {
+  animation-delay: 400ms;
+}
+
+.delay-600 {
+  animation-delay: 600ms;
 }

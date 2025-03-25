@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { MessageSquareText, Menu, LogIn, UserCircle, Send, PlusCircle, LogOut, UserPlus } from 'lucide-react';
+import LandingPage from './components/LandingPage';
 
 const TributarIA = () => {
+  // Estado para controlar a visualização principal
+  const [view, setView] = useState('landing'); // 'landing', 'login', 'register', 'app'
+  
   // Estados para gerenciar a aplicação
   const [loggedIn, setLoggedIn] = useState(false);
   const [isLoginForm, setIsLoginForm] = useState(true); // Controla qual formulário está sendo exibido
@@ -27,12 +31,28 @@ const TributarIA = () => {
   // URL do webhook
   const WEBHOOK_URL = "https://webhooks.mllancamentos.com.br/webhook/demo-tributaria";
   
+  // Manipuladores para navegação
+  const handleShowLogin = () => {
+    setView('login');
+    setIsLoginForm(true);
+  };
+  
+  const handleShowRegister = () => {
+    setView('register');
+    setIsLoginForm(false);
+  };
+  
+  const handleBackToLanding = () => {
+    setView('landing');
+  };
+  
   // Função de login simplificada
   const handleLogin = (e) => {
     e.preventDefault();
     if (username.trim() && password.trim()) {
       console.log("Login realizado com sucesso:", username);
       setLoggedIn(true);
+      setView('app');
       // Não carrega dados fictícios após login, inicia com listas vazias
       setConversations([]);
       setActiveChat(null);
@@ -43,6 +63,7 @@ const TributarIA = () => {
   // Função para alternar entre os formulários
   const toggleForm = () => {
     setIsLoginForm(!isLoginForm);
+    setView(isLoginForm ? 'register' : 'login');
     // Limpar os campos ao alternar
     setUsername('');
     setPassword('');
@@ -83,6 +104,7 @@ const TributarIA = () => {
     // Em uma implementação real, enviaria esses dados para um backend
     // Por enquanto, vamos apenas fazer login com o usuário registrado
     setLoggedIn(true);
+    setView('app');
     setConversations([]);
     setActiveChat(null);
     setChatHistory([]);
@@ -95,6 +117,7 @@ const TributarIA = () => {
     setChatHistory([]);
     setConversations([]);
     setActiveChat(null);
+    setView('landing');
   };
   
   const handleSendMessage = async () => {
@@ -250,19 +273,29 @@ const TributarIA = () => {
     }
   };
   
-  return (
-    <div className="flex flex-col h-[100vh] bg-gray-50 overflow-hidden fixed inset-0">
-      {!loggedIn ? (
-        // Tela de login/registro
-        <div className="flex flex-col items-center justify-center h-full p-4">
+  // Renderiza diferentes telas com base no estado view
+  const renderContent = () => {
+    if (view === 'landing') {
+      return <LandingPage onLoginClick={handleShowLogin} onRegisterClick={handleShowRegister} />;
+    } else if (view === 'login' || view === 'register') {
+      return (
+        <div className="flex flex-col items-center justify-center h-full p-4 bg-gray-50 min-h-screen">
           <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-between items-center mb-6">
               <div className="flex items-center text-blue-600">
                 <MessageSquareText size={32} />
                 <h1 className="ml-2 text-2xl font-bold">tributarIA</h1>
               </div>
+              <button 
+                onClick={handleBackToLanding}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                Voltar
+              </button>
             </div>
-            <h2 className="mb-6 text-xl text-center text-gray-700">Seu assistente especializado em reforma tributária</h2>
+            <h2 className="mb-6 text-xl text-center text-gray-700">
+              {isLoginForm ? 'Acesse sua conta' : 'Crie sua conta'}
+            </h2>
             
             {isLoginForm ? (
               // Formulário de login
@@ -293,8 +326,7 @@ const TributarIA = () => {
                     />
                   </div>
                   <button
-                    type="button"
-                    onClick={handleLogin}
+                    type="submit"
                     className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center mb-3"
                   >
                     <LogIn className="mr-2" size={20} />
@@ -390,10 +422,10 @@ const TributarIA = () => {
                     />
                   </div>
                   <div className="mb-6">
-                    <label className="flex items-center text-sm text-gray-700">
+                    <label className="flex items-start text-sm text-gray-700">
                       <input
                         type="checkbox"
-                        className="mr-2"
+                        className="mr-2 mt-1"
                         checked={acceptTerms}
                         onChange={(e) => setAcceptTerms(e.target.checked)}
                         required
@@ -423,8 +455,9 @@ const TributarIA = () => {
             )}
           </div>
         </div>
-      ) : (
-        // Interface principal do app
+      );
+    } else if (view === 'app') {
+      return (
         <div className="flex flex-col h-full">
           {/* Header */}
           <header className="bg-blue-600 text-white p-4 shadow-md w-full z-10">
@@ -595,7 +628,13 @@ const TributarIA = () => {
             </main>
           </div>
         </div>
-      )}
+      );
+    }
+  };
+  
+  return (
+    <div className={`flex flex-col min-h-screen bg-gray-50 overflow-hidden ${view === 'app' ? 'fixed inset-0 app-container' : ''}`}>
+      {renderContent()}
     </div>
   );
 };
