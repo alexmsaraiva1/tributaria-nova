@@ -231,45 +231,103 @@ const LandingPage = ({ onLoginClick, onRegisterClick }) => {
       {/* Preço */}
       <section className="py-16 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-12">Investimento acessível</h2>
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden text-gray-800">
-              <div className="p-8">
-                <h3 className="text-2xl font-bold mb-2">Assinatura Mensal</h3>
-                <div className="flex items-center justify-center">
-                  <span className="text-4xl font-bold">R$ 47</span>
-                  <span className="text-gray-500 ml-2">/mês</span>
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-12">Escolha o plano ideal para você</h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Plano Básico */}
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden text-gray-800 transform transition-transform hover:scale-105">
+                <div className="bg-blue-600 p-4 text-white text-center">
+                  <h3 className="text-xl font-bold">Plano Básico</h3>
                 </div>
-                <p className="text-gray-600 mt-4 mb-6">
-                  Acesso completo à tributarIA com todas as funcionalidades
-                </p>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center">
-                    <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                    <span>Perguntas ilimitadas</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                    <span>Histórico de conversas salvo</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                    <span>Atualizações contínuas</span>
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                    <span>Suporte por email</span>
-                  </li>
-                </ul>
-                <button 
-                  onClick={onRegisterClick}
-                  className="w-full py-3 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold"
-                >
-                  Começar agora
-                </button>
+                <div className="p-8">
+                  <div className="flex items-center justify-center mb-4">
+                    <span className="text-4xl font-bold">R$ 47</span>
+                    <span className="text-gray-500 ml-2">/mês</span>
+                  </div>
+                  <p className="text-gray-600 text-center mb-6">
+                    Perfeito para começar a usar a tributarIA
+                  </p>
+                  <ul className="space-y-3 mb-8">
+                    <li className="flex items-center">
+                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
+                      <span>Perguntas ilimitadas</span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
+                      <span>Histórico de conversas salvo</span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
+                      <span>Atualizações contínuas</span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
+                      <span>Suporte por email</span>
+                    </li>
+                  </ul>
+                  <button 
+                    onClick={onRegisterClick}
+                    className="w-full py-3 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold transition-colors"
+                  >
+                    Começar agora
+                  </button>
+                </div>
+              </div>
+              
+              {/* Plano Premium */}
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden text-gray-800 transform transition-transform hover:scale-105 border-2 border-yellow-400 relative">
+                {/* Faixa Recomendado na diagonal */}
+                <div className="absolute top-0 right-0 bg-yellow-400 text-blue-900 text-xs font-medium px-4 py-0.5 origin-top-right rotate-45 transform translate-y-4 translate-x-8 opacity-80 z-10">
+                  RECOMENDADO
+                </div>
+                
+                <div className="bg-gradient-to-r from-blue-700 to-blue-900 p-4 text-white text-center">
+                  <h3 className="text-xl font-bold">Plano Premium</h3>
+                </div>
+                <div className="p-8">
+                  <div className="flex items-center justify-center mb-4">
+                    <span className="text-4xl font-bold">R$ 97</span>
+                    <span className="text-gray-500 ml-2">/mês</span>
+                  </div>
+                  <p className="text-gray-600 text-center mb-6">
+                    Acesso completo a todos os recursos avançados
+                  </p>
+                  <ul className="space-y-3 mb-8">
+                    <li className="flex items-center">
+                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
+                      <span>Tudo do plano básico</span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
+                      <span>Biblioteca de referências oficiais</span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
+                      <span>Análises comparativas fiscais</span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
+                      <span>Simulações práticas de cenários</span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
+                      <span>Alertas de mudanças na legislação</span>
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
+                      <span>Suporte prioritário</span>
+                    </li>
+                  </ul>
+                  <button 
+                    onClick={onRegisterClick}
+                    className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-md hover:from-blue-700 hover:to-blue-900 font-bold transition-colors"
+                  >
+                    Obter plano premium
+                  </button>
+                </div>
               </div>
             </div>
-            <p className="mt-6 text-sm opacity-80">
+            <p className="mt-8 text-sm opacity-80 text-center">
               Cancele a qualquer momento. Sem compromisso de permanência.
             </p>
           </div>
@@ -339,4 +397,4 @@ const LandingPage = ({ onLoginClick, onRegisterClick }) => {
   );
 };
 
-export default LandingPage; 
+export default LandingPage;
