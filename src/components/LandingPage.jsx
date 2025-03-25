@@ -1,7 +1,48 @@
-import React from 'react';
-import { ArrowRight, CheckCircle2, Building, BookOpen, Calculator, TrendingUp, ChevronRight, MessageSquareText, LogIn, UserPlus, ShieldCheck, Clock, BarChart, Lightbulb, UserCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, CheckCircle2, Building, BookOpen, Calculator, TrendingUp, ChevronRight, MessageSquareText, LogIn, UserPlus, ShieldCheck, Clock, BarChart, Lightbulb, UserCheck, ChevronDown } from 'lucide-react';
 
 const LandingPage = ({ onLoginClick, onRegisterClick }) => {
+  const [openFaq, setOpenFaq] = useState(null);
+
+  const toggleFaq = (index) => {
+    if (openFaq === index) {
+      setOpenFaq(null);
+    } else {
+      setOpenFaq(index);
+    }
+  };
+
+  const faqs = [
+    {
+      question: "A tributarIA é precisa nas informações sobre a reforma tributária?",
+      answer: "Sim. A tributarIA foi treinada com informações oficiais e atualizadas sobre a reforma tributária brasileira. Nosso sistema é constantemente atualizado para incorporar as mais recentes mudanças na legislação, garantindo que você receba informações precisas e confiáveis. Além disso, quando relevante, fornecemos referências às fontes oficiais para que você possa verificar as informações."
+    },
+    {
+      question: "Vale a pena pagar R$47 por mês por um serviço que posso obter de um contador?",
+      answer: "A tributarIA não substitui o trabalho do contador, mas o complementa. Por apenas R$47/mês, você tem acesso ilimitado a informações instantâneas, 24/7, sem necessidade de agendar consultas ou esperar por respostas. Seu contador continua sendo essencial para questões específicas do seu negócio, mas a tributarIA oferece um suporte contínuo para dúvidas pontuais e atualizações constantes, economizando tempo e dinheiro em consultas frequentes."
+    },
+    {
+      question: "As informações são realmente atualizadas conforme as mudanças na legislação?",
+      answer: "Absolutamente. Nossa equipe monitora constantemente as alterações na legislação tributária e atualiza a tributarIA com essas novas informações. Quando há uma atualização significativa na reforma tributária, nosso sistema é imediatamente atualizado para refletir essas mudanças, garantindo que você sempre tenha acesso às informações mais recentes e relevantes para o seu negócio."
+    },
+    {
+      question: "Como posso confiar em respostas geradas por IA em vez de um especialista humano?",
+      answer: "Nossa IA é treinada com informações verificadas por especialistas em tributação. O sistema foi desenvolvido para fornecer informações objetivas baseadas na legislação atual, não opiniões. Quando há interpretações divergentes ou situações complexas, a tributarIA indica claramente esses pontos e sugere consulta especializada. Além disso, todas as respostas incluem referências às fontes legais, permitindo que você verifique as informações."
+    },
+    {
+      question: "Meu negócio tem especificidades únicas. A tributarIA entenderá meu contexto?",
+      answer: "A tributarIA foi projetada para compreender contextos específicos de diversos setores e portes de empresas. Você pode detalhar sua situação nas perguntas, e o sistema adaptará as respostas ao seu contexto. Para casos extremamente específicos ou situações que exigem interpretação única da sua realidade empresarial, recomendamos complementar as informações da tributarIA com a consultoria do seu contador."
+    },
+    {
+      question: "E se eu tiver dificuldades em usar a plataforma ou não encontrar respostas satisfatórias?",
+      answer: "Oferecemos suporte por email para ajudar em qualquer dificuldade técnica com a plataforma. Além disso, estamos constantemente aprimorando a tributarIA com base no feedback dos usuários. Se você não encontrar uma resposta satisfatória, nossa equipe de suporte pode orientá-lo e utilizar sua dúvida para melhorar ainda mais o sistema. E lembre-se: você pode cancelar a assinatura a qualquer momento sem custos adicionais."
+    },
+    {
+      question: "Minhas perguntas e dados ficarão seguros na plataforma?",
+      answer: "Sim, a segurança dos seus dados é nossa prioridade. Utilizamos tecnologias avançadas de criptografia para proteger todas as conversas e informações compartilhadas na plataforma. Seguimos rigorosamente as diretrizes da LGPD, e seus dados nunca são compartilhados com terceiros. Você mantém total controle sobre suas informações e pode solicitar a exclusão delas a qualquer momento."
+    }
+  ];
+
   return (
     <div className="min-h-screen flex flex-col landing-page">
       {/* Barra de navegação */}
@@ -231,6 +272,53 @@ const LandingPage = ({ onLoginClick, onRegisterClick }) => {
             <p className="mt-6 text-sm opacity-80">
               Cancele a qualquer momento. Sem compromisso de permanência.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ - Perguntas Frequentes */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-12">Perguntas Frequentes</h2>
+            
+            <div className="space-y-6">
+              {faqs.map((faq, index) => (
+                <div 
+                  key={index} 
+                  className="bg-white rounded-lg shadow-sm overflow-hidden"
+                >
+                  <button
+                    className="flex justify-between items-center w-full p-6 text-left"
+                    onClick={() => toggleFaq(index)}
+                  >
+                    <h3 className="text-lg font-semibold text-gray-800">{faq.question}</h3>
+                    <ChevronDown 
+                      className={`text-blue-600 transition-transform ${openFaq === index ? 'transform rotate-180' : ''}`} 
+                      size={20} 
+                    />
+                  </button>
+                  
+                  <div 
+                    className={`px-6 transition-all duration-300 ease-in-out ${
+                      openFaq === index ? 'pb-6 max-h-96' : 'max-h-0 overflow-hidden'
+                    }`}
+                  >
+                    <p className="text-gray-600">{faq.answer}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-12 text-center">
+              <button 
+                onClick={onRegisterClick}
+                className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold flex items-center mx-auto"
+              >
+                Comece a esclarecer suas dúvidas agora
+                <ChevronRight size={20} className="ml-1" />
+              </button>
+            </div>
           </div>
         </div>
       </section>
