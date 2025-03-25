@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { MessageSquareText, Menu, LogIn, UserCircle, Send, PlusCircle, LogOut } from 'lucide-react';
+import { MessageSquareText, Menu, LogIn, UserCircle, Send, PlusCircle, LogOut, UserPlus } from 'lucide-react';
 
 const TributarIA = () => {
   // Estados para gerenciar a aplicação
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isLoginForm, setIsLoginForm] = useState(true); // Controla qual formulário está sendo exibido
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  // Novos estados para o formulário de registro
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  
   const [currentMessage, setCurrentMessage] = useState('');
   const [activeChat, setActiveChat] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -30,6 +38,54 @@ const TributarIA = () => {
       setActiveChat(null);
       setChatHistory([]);
     }
+  };
+  
+  // Função para alternar entre os formulários
+  const toggleForm = () => {
+    setIsLoginForm(!isLoginForm);
+    // Limpar os campos ao alternar
+    setUsername('');
+    setPassword('');
+    setFullName('');
+    setEmail('');
+    setPhone('');
+    setConfirmPassword('');
+    setAcceptTerms(false);
+  };
+  
+  // Função para lidar com o registro de nova conta
+  const handleRegister = (e) => {
+    e.preventDefault();
+    
+    // Validação básica
+    if (!fullName.trim() || !email.trim() || !phone.trim() || !username.trim() || !password.trim() || !confirmPassword.trim()) {
+      alert('Por favor, preencha todos os campos');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      alert('As senhas não coincidem');
+      return;
+    }
+    
+    if (!acceptTerms) {
+      alert('Você precisa aceitar os termos de uso e política de privacidade');
+      return;
+    }
+    
+    console.log("Registro realizado com sucesso:", {
+      nome: fullName,
+      email,
+      telefone: phone,
+      usuario: username
+    });
+    
+    // Em uma implementação real, enviaria esses dados para um backend
+    // Por enquanto, vamos apenas fazer login com o usuário registrado
+    setLoggedIn(true);
+    setConversations([]);
+    setActiveChat(null);
+    setChatHistory([]);
   };
   
   const handleLogout = () => {
@@ -197,7 +253,7 @@ const TributarIA = () => {
   return (
     <div className="flex flex-col h-[100vh] bg-gray-50 overflow-hidden fixed inset-0">
       {!loggedIn ? (
-        // Tela de login
+        // Tela de login/registro
         <div className="flex flex-col items-center justify-center h-full p-4">
           <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
             <div className="flex justify-center mb-6">
@@ -207,43 +263,164 @@ const TributarIA = () => {
               </div>
             </div>
             <h2 className="mb-6 text-xl text-center text-gray-700">Seu assistente especializado em reforma tributária</h2>
-            <form onSubmit={handleLogin}>
-              <div className="mb-4">
-                <label className="block mb-2 text-sm text-gray-700" htmlFor="username">Usuário</label>
-                <input
-                  id="username"
-                  type="text"
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="demo"
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <label className="block mb-2 text-sm text-gray-700" htmlFor="password">Senha</label>
-                <input
-                  id="password"
-                  type="password"
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="123456"
-                  required
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleLogin}
-                className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center"
-              >
-                <LogIn className="mr-2" size={20} />
-                Entrar
-              </button>
-            </form>
-            <div className="mt-4 text-sm text-center text-gray-600">
-              Para testar, use qualquer usuário e senha
-            </div>
+            
+            {isLoginForm ? (
+              // Formulário de login
+              <>
+                <form onSubmit={handleLogin}>
+                  <div className="mb-4">
+                    <label className="block mb-2 text-sm text-gray-700" htmlFor="username">Usuário</label>
+                    <input
+                      id="username"
+                      type="text"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Seu nome de usuário"
+                      required
+                    />
+                  </div>
+                  <div className="mb-6">
+                    <label className="block mb-2 text-sm text-gray-700" htmlFor="password">Senha</label>
+                    <input
+                      id="password"
+                      type="password"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Sua senha"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogin}
+                    className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center mb-3"
+                  >
+                    <LogIn className="mr-2" size={20} />
+                    Entrar
+                  </button>
+                </form>
+                <button
+                  type="button"
+                  onClick={toggleForm}
+                  className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center justify-center"
+                >
+                  <UserPlus className="mr-2" size={20} />
+                  Criar nova conta
+                </button>
+                <div className="mt-4 text-sm text-center text-gray-600">
+                  Para testar, use qualquer usuário e senha
+                </div>
+              </>
+            ) : (
+              // Formulário de registro
+              <>
+                <form onSubmit={handleRegister}>
+                  <div className="mb-4">
+                    <label className="block mb-2 text-sm text-gray-700" htmlFor="fullName">Nome completo</label>
+                    <input
+                      id="fullName"
+                      type="text"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Seu nome completo"
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block mb-2 text-sm text-gray-700" htmlFor="phone">Telefone</label>
+                    <input
+                      id="phone"
+                      type="tel"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="(00) 00000-0000"
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block mb-2 text-sm text-gray-700" htmlFor="email">E-mail</label>
+                    <input
+                      id="email"
+                      type="email"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="seu@email.com"
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block mb-2 text-sm text-gray-700" htmlFor="registerUsername">Nome de usuário</label>
+                    <input
+                      id="registerUsername"
+                      type="text"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Nome de usuário desejado"
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block mb-2 text-sm text-gray-700" htmlFor="registerPassword">Senha</label>
+                    <input
+                      id="registerPassword"
+                      type="password"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Crie uma senha segura"
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block mb-2 text-sm text-gray-700" htmlFor="confirmPassword">Confirmar senha</label>
+                    <input
+                      id="confirmPassword"
+                      type="password"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirme sua senha"
+                      required
+                    />
+                  </div>
+                  <div className="mb-6">
+                    <label className="flex items-center text-sm text-gray-700">
+                      <input
+                        type="checkbox"
+                        className="mr-2"
+                        checked={acceptTerms}
+                        onChange={(e) => setAcceptTerms(e.target.checked)}
+                        required
+                      />
+                      <span>
+                        Estou ciente e concordo com a coleta dos meus dados para criação de conta de acordo com a Lei Geral de Proteção de Dados Pessoais (LGPD)
+                      </span>
+                    </label>
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center mb-3"
+                  >
+                    <UserPlus className="mr-2" size={20} />
+                    Cadastrar
+                  </button>
+                </form>
+                <button
+                  type="button"
+                  onClick={toggleForm}
+                  className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center justify-center"
+                >
+                  <LogIn className="mr-2" size={20} />
+                  Já tenho uma conta
+                </button>
+              </>
+            )}
           </div>
         </div>
       ) : (
