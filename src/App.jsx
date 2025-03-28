@@ -1,23 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { MessageSquareText, Menu, LogIn, UserCircle, Send, PlusCircle, LogOut, UserPlus } from 'lucide-react';
 import LandingPage from './components/LandingPage';
+import ChatContainer from './components/chat/ChatContainer';
+import { validateRegistrationForm, sanitizeInput } from './utils/validation';
+import { isAuthenticated, createSession, clearSession, getCurrentUser } from './utils/session';
+import { AuthProvider } from './contexts/AuthContext';
+import { ChatProvider } from './contexts/ChatContext';
+import { SubscriptionProvider } from './contexts/SubscriptionContext';
+import { useAuth } from './contexts/AuthContext';
 
 const TributarIA = () => {
   // Estado para controlar a visualização principal
   const [view, setView] = useState('landing'); // 'landing', 'login', 'register', 'app'
   
   // Estados para gerenciar a aplicação
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [isLoginForm, setIsLoginForm] = useState(true); // Controla qual formulário está sendo exibido
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  // Novos estados para o formulário de registro
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showLogin, setShowLogin] = useState(true);
+  const [formErrors, setFormErrors] = useState({});
+  const [formData, setFormData] = useState({
+    fullName: '',
+    phone: '',
+    email: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
+    acceptTerms: false
+  });
   
   const [currentMessage, setCurrentMessage] = useState('');
   const [activeChat, setActiveChat] = useState(null);
@@ -31,93 +40,107 @@ const TributarIA = () => {
   // URL do webhook
   const WEBHOOK_URL = "https://webhooks.mllancamentos.com.br/webhook/demo-tributaria";
   
+  // Verifica autenticação ao carregar
+  useEffect(() => {
+    const checkAuth = () => {
+      setIsAuthenticated(isAuthenticated());
+    };
+    checkAuth();
+  }, []);
+  
   // Manipuladores para navegação
   const handleShowLogin = () => {
     setView('login');
-    setIsLoginForm(true);
+    setShowLogin(true);
   };
   
   const handleShowRegister = () => {
     setView('register');
-    setIsLoginForm(false);
+    setShowLogin(false);
   };
   
   const handleBackToLanding = () => {
     setView('landing');
   };
   
-  // Função de login simplificada
   const handleLogin = (e) => {
     e.preventDefault();
-    if (username.trim() && password.trim()) {
-      console.log("Login realizado com sucesso:", username);
-      setLoggedIn(true);
-      setView('app');
-      // Não carrega dados fictícios após login, inicia com listas vazias
-      setConversations([]);
-      setActiveChat(null);
-      setChatHistory([]);
-    }
+    const username = sanitizeInput(formData.username);
+    const password = formData.password;
+
+    // Aqui você implementará a chamada à API de autenticação
+    // Por enquanto, vamos simular um login bem-sucedido
+    const userData = {
+      id: 1,
+      username,
+      fullName: 'Usuário Teste'
+    };
+
+    createSession(userData);
+    setIsAuthenticated(true);
+    setFormErrors({});
   };
   
-  // Função para alternar entre os formulários
-  const toggleForm = () => {
-    setIsLoginForm(!isLoginForm);
-    setView(isLoginForm ? 'register' : 'login');
-    // Limpar os campos ao alternar
-    setUsername('');
-    setPassword('');
-    setFullName('');
-    setEmail('');
-    setPhone('');
-    setConfirmPassword('');
-    setAcceptTerms(false);
-  };
-  
-  // Função para lidar com o registro de nova conta
   const handleRegister = (e) => {
     e.preventDefault();
     
-    // Validação básica
-    if (!fullName.trim() || !email.trim() || !phone.trim() || !username.trim() || !password.trim() || !confirmPassword.trim()) {
-      alert('Por favor, preencha todos os campos');
+    // Validação do formulário
+    const errors = validateRegistrationForm(formData);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
-    
-    if (password !== confirmPassword) {
-      alert('As senhas não coincidem');
-      return;
-    }
-    
-    if (!acceptTerms) {
-      alert('Você precisa aceitar os termos de uso e política de privacidade');
-      return;
-    }
-    
-    console.log("Registro realizado com sucesso:", {
-      nome: fullName,
-      email,
-      telefone: phone,
-      usuario: username
-    });
-    
-    // Em uma implementação real, enviaria esses dados para um backend
-    // Por enquanto, vamos apenas fazer login com o usuário registrado
-    setLoggedIn(true);
-    setView('app');
-    setConversations([]);
-    setActiveChat(null);
-    setChatHistory([]);
+
+    // Sanitização dos dados
+    const sanitizedData = {
+      ...formData,
+      fullName: sanitizeInput(formData.fullName),
+      phone: sanitizeInput(formData.phone),
+      email: sanitizeInput(formData.email),
+      username: sanitizeInput(formData.username)
+    };
+
+    // Aqui você implementará a chamada à API de registro
+    // Por enquanto, vamos simular um registro bem-sucedido
+    const userData = {
+      id: 1,
+      username: sanitizedData.username,
+      fullName: sanitizedData.fullName
+    };
+
+    createSession(userData);
+    setIsAuthenticated(true);
+    setFormErrors({});
   };
   
   const handleLogout = () => {
-    setLoggedIn(false);
-    setUsername('');
-    setPassword('');
-    setChatHistory([]);
-    setConversations([]);
-    setActiveChat(null);
-    setView('landing');
+    clearSession();
+    setIsAuthenticated(false);
+    setShowLogin(true);
+    setFormData({
+      fullName: '',
+      phone: '',
+      email: '',
+      username: '',
+      password: '',
+      confirmPassword: '',
+      acceptTerms: false
+    });
+  };
+  
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+    // Limpa erro do campo quando o usuário começa a digitar
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
   
   const handleSendMessage = async () => {
@@ -160,7 +183,7 @@ const TributarIA = () => {
       
       // Dados a serem enviados para o webhook
       const payload = {
-        user_id: username,
+        user_id: formData.username,
         chat_id: activeChat ? activeChat.id : Date.now(),
         message: messageToSend,
         timestamp: new Date().toISOString()
@@ -294,10 +317,10 @@ const TributarIA = () => {
               </button>
             </div>
             <h2 className="mb-6 text-xl text-center text-gray-700">
-              {isLoginForm ? 'Acesse sua conta' : 'Crie sua conta'}
+              {showLogin ? 'Acesse sua conta' : 'Crie sua conta'}
             </h2>
             
-            {isLoginForm ? (
+            {showLogin ? (
               // Formulário de login
               <>
                 <form onSubmit={handleLogin}>
@@ -307,8 +330,9 @@ const TributarIA = () => {
                       id="username"
                       type="text"
                       className="w-full p-2 border border-gray-300 rounded-md"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={formData.username}
+                      onChange={handleInputChange}
+                      name="username"
                       placeholder="Seu nome de usuário"
                       required
                     />
@@ -319,8 +343,9 @@ const TributarIA = () => {
                       id="password"
                       type="password"
                       className="w-full p-2 border border-gray-300 rounded-md"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      name="password"
                       placeholder="Sua senha"
                       required
                     />
@@ -335,7 +360,7 @@ const TributarIA = () => {
                 </form>
                 <button
                   type="button"
-                  onClick={toggleForm}
+                  onClick={() => setShowLogin(false)}
                   className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center justify-center"
                 >
                   <UserPlus className="mr-2" size={20} />
@@ -355,8 +380,9 @@ const TributarIA = () => {
                       id="fullName"
                       type="text"
                       className="w-full p-2 border border-gray-300 rounded-md"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
+                      value={formData.fullName}
+                      onChange={handleInputChange}
+                      name="fullName"
                       placeholder="Seu nome completo"
                       required
                     />
@@ -367,8 +393,9 @@ const TributarIA = () => {
                       id="phone"
                       type="tel"
                       className="w-full p-2 border border-gray-300 rounded-md"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      name="phone"
                       placeholder="(00) 00000-0000"
                       required
                     />
@@ -379,8 +406,9 @@ const TributarIA = () => {
                       id="email"
                       type="email"
                       className="w-full p-2 border border-gray-300 rounded-md"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      name="email"
                       placeholder="seu@email.com"
                       required
                     />
@@ -391,8 +419,9 @@ const TributarIA = () => {
                       id="registerUsername"
                       type="text"
                       className="w-full p-2 border border-gray-300 rounded-md"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={formData.username}
+                      onChange={handleInputChange}
+                      name="username"
                       placeholder="Nome de usuário desejado"
                       required
                     />
@@ -403,8 +432,9 @@ const TributarIA = () => {
                       id="registerPassword"
                       type="password"
                       className="w-full p-2 border border-gray-300 rounded-md"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      name="password"
                       placeholder="Crie uma senha segura"
                       required
                     />
@@ -415,8 +445,9 @@ const TributarIA = () => {
                       id="confirmPassword"
                       type="password"
                       className="w-full p-2 border border-gray-300 rounded-md"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      name="confirmPassword"
                       placeholder="Confirme sua senha"
                       required
                     />
@@ -426,8 +457,9 @@ const TributarIA = () => {
                       <input
                         type="checkbox"
                         className="mr-2 mt-1"
-                        checked={acceptTerms}
-                        onChange={(e) => setAcceptTerms(e.target.checked)}
+                        checked={formData.acceptTerms}
+                        onChange={handleInputChange}
+                        name="acceptTerms"
                         required
                       />
                       <span>
@@ -445,7 +477,7 @@ const TributarIA = () => {
                 </form>
                 <button
                   type="button"
-                  onClick={toggleForm}
+                  onClick={() => setShowLogin(true)}
                   className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center justify-center"
                 >
                   <LogIn className="mr-2" size={20} />
@@ -476,7 +508,7 @@ const TributarIA = () => {
               </div>
               <div className="flex items-center">
                 <UserCircle size={24} className="mr-2" />
-                <span className="mr-4 hidden sm:inline">{username}</span>
+                <span className="mr-4 hidden sm:inline">{getCurrentUser()?.fullName}</span>
                 <button 
                   onClick={handleLogout}
                   className="p-1 hover:bg-blue-700 rounded-full"
@@ -633,9 +665,15 @@ const TributarIA = () => {
   };
   
   return (
-    <div className={`flex flex-col min-h-screen bg-gray-50 overflow-hidden ${view === 'app' ? 'fixed inset-0 app-container' : ''}`}>
-      {renderContent()}
-    </div>
+    <AuthProvider>
+      <SubscriptionProvider>
+        <ChatProvider>
+          <div className={`flex flex-col min-h-screen bg-gray-50 overflow-hidden ${view === 'app' ? 'fixed inset-0 app-container' : ''}`}>
+            {renderContent()}
+          </div>
+        </ChatProvider>
+      </SubscriptionProvider>
+    </AuthProvider>
   );
 };
 

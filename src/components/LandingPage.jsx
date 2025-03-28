@@ -1,14 +1,88 @@
 import React, { useState } from 'react';
 import { ArrowRight, CheckCircle2, Building, BookOpen, Calculator, TrendingUp, ChevronRight, MessageSquareText, LogIn, UserPlus, ShieldCheck, Clock, BarChart, Lightbulb, UserCheck, ChevronDown } from 'lucide-react';
+import FormErrors from './FormErrors';
+import { validateRegistrationForm, sanitizeInput } from '../utils/validation';
+import { useAuth } from '../contexts/AuthContext';
+import { useSubscription } from '../contexts/SubscriptionContext';
 
-const LandingPage = ({ onLoginClick, onRegisterClick }) => {
+const LandingPage = () => {
+  const { signIn, signUp } = useAuth();
+  const { plans } = useSubscription();
+  const [showLogin, setShowLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    phone: '',
+    email: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
+    acceptTerms: false
+  });
+  const [formErrors, setFormErrors] = useState({});
 
   const toggleFaq = (index) => {
     if (openFaq === index) {
       setOpenFaq(null);
     } else {
       setOpenFaq(index);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+    // Limpa o erro do campo quando o usuário começa a digitar
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setFormErrors({});
+
+    try {
+      const { error } = await signIn({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (error) throw error;
+    } catch (error) {
+      setFormErrors({
+        auth: 'Email ou senha inválidos'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setFormErrors({});
+
+    try {
+      const { error } = await signUp({
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.fullName,
+        phone: formData.phone,
+      });
+
+      if (error) throw error;
+    } catch (error) {
+      setFormErrors({
+        auth: 'Erro ao criar conta. Por favor, tente novamente.'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,14 +128,14 @@ const LandingPage = ({ onLoginClick, onRegisterClick }) => {
           </div>
           <div className="flex items-center space-x-4">
             <button 
-              onClick={onLoginClick}
+              onClick={() => setShowLogin(true)}
               className="px-4 py-2 text-blue-600 hover:text-blue-800 font-medium flex items-center"
             >
               <LogIn size={18} className="mr-1" />
               Entrar
             </button>
             <button 
-              onClick={onRegisterClick}
+              onClick={() => setShowLogin(false)}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium flex items-center"
             >
               <UserPlus size={18} className="mr-1" />
@@ -81,14 +155,14 @@ const LandingPage = ({ onLoginClick, onRegisterClick }) => {
             </p>
             <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 animate-fadeIn delay-400">
               <button 
-                onClick={onRegisterClick}
+                onClick={() => setShowLogin(false)}
                 className="px-6 py-3 bg-white text-blue-600 rounded-md hover:bg-gray-100 font-bold flex items-center justify-center"
               >
                 Começar agora
                 <ChevronRight size={20} className="ml-1" />
               </button>
               <button 
-                onClick={onLoginClick}
+                onClick={() => setShowLogin(true)}
                 className="px-6 py-3 bg-blue-700 text-white rounded-md hover:bg-blue-900 font-bold flex items-center justify-center"
               >
                 Acessar minha conta
@@ -98,6 +172,128 @@ const LandingPage = ({ onLoginClick, onRegisterClick }) => {
           </div>
         </div>
       </section>
+
+      {/* Formulário de Login/Registro */}
+      <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
+        <div className="flex justify-between mb-6">
+          <button
+            className={`flex-1 py-2 text-center ${showLogin ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+            onClick={() => setShowLogin(true)}
+          >
+            Login
+          </button>
+          <button
+            className={`flex-1 py-2 text-center ${!showLogin ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+            onClick={() => setShowLogin(false)}
+          >
+            Cadastro
+          </button>
+        </div>
+
+        <FormErrors errors={formErrors} />
+
+        <form onSubmit={showLogin ? handleLogin : handleRegister}>
+          {!showLogin && (
+            <>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="fullName">
+                  Nome Completo
+                </label>
+                <input
+                  type="text"
+                  id="fullName"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phone">
+                  Telefone
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+              Senha
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          {!showLogin && (
+            <div className="mb-6">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="acceptTerms"
+                  checked={formData.acceptTerms}
+                  onChange={handleInputChange}
+                  className="mr-2"
+                  required
+                />
+                <span className="text-sm text-gray-600">
+                  Aceito os termos de uso e política de privacidade
+                </span>
+              </label>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 disabled:opacity-50"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processando...
+              </span>
+            ) : (
+              showLogin ? 'Entrar' : 'Criar Conta'
+            )}
+          </button>
+        </form>
+      </div>
 
       {/* Benefícios */}
       <section className="py-16 bg-white">
@@ -266,7 +462,7 @@ const LandingPage = ({ onLoginClick, onRegisterClick }) => {
                     </li>
                   </ul>
                   <button 
-                    onClick={onRegisterClick}
+                    onClick={() => setShowLogin(false)}
                     className="w-full py-3 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold transition-colors"
                   >
                     Começar agora
@@ -319,7 +515,7 @@ const LandingPage = ({ onLoginClick, onRegisterClick }) => {
                     </li>
                   </ul>
                   <button 
-                    onClick={onRegisterClick}
+                    onClick={() => setShowLogin(false)}
                     className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-md hover:from-blue-700 hover:to-blue-900 font-bold transition-colors"
                   >
                     Obter plano premium
@@ -370,7 +566,7 @@ const LandingPage = ({ onLoginClick, onRegisterClick }) => {
             
             <div className="mt-12 text-center">
               <button 
-                onClick={onRegisterClick}
+                onClick={() => setShowLogin(false)}
                 className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold flex items-center mx-auto"
               >
                 Comece a esclarecer suas dúvidas agora
