@@ -65,10 +65,14 @@ export function ChatProvider({ children }) {
 
   // Função para criar um novo chat
   const createChat = async (title) => {
-    if (!title?.trim() || !user) return { data: null, error: new Error('Título inválido ou usuário não autenticado') };
+    if (!user) return { data: null, error: new Error('Usuário não autenticado') };
+    
+    // Se não houver título, criar um padrão
+    const chatTitle = title?.trim() || `Nova conversa ${new Date().toLocaleString('pt-BR')}`;
     
     try {
-      const { data, error } = await chats.create(title.trim());
+      setLoading(true);
+      const { data, error } = await chats.create(chatTitle);
       if (error) throw error;
       
       // Atualizar a lista de chats com o novo chat no topo
@@ -77,7 +81,10 @@ export function ChatProvider({ children }) {
       
       return { data, error: null };
     } catch (error) {
+      console.error('Erro ao criar chat:', error);
       return { data: null, error };
+    } finally {
+      setLoading(false);
     }
   };
 

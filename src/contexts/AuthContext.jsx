@@ -22,12 +22,22 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // Salvar usuário no localStorage para o webhook
+  useEffect(() => {
+    if (user?.id) {
+      localStorage.setItem('userId', user.id);
+    } else {
+      localStorage.removeItem('userId');
+    }
+  }, [user]);
+
   useEffect(() => {
     // Verifica o usuário atual
     supabase.auth.getUser()
       .then(({ data, error }) => {
         if (!error && data.user) {
           setUser(data.user);
+          localStorage.setItem('userId', data.user.id);
           loadProfile(data.user.id);
         }
         setLoading(false);
@@ -43,8 +53,10 @@ export function AuthProvider({ children }) {
       setUser(currentUser);
       
       if (currentUser) {
+        localStorage.setItem('userId', currentUser.id);
         loadProfile(currentUser.id);
       } else {
+        localStorage.removeItem('userId');
         setProfile(null);
       }
       
@@ -77,6 +89,12 @@ export function AuthProvider({ children }) {
       });
       
       if (error) throw error;
+      
+      // Salvar o ID do usuário no localStorage
+      if (data.user) {
+        localStorage.setItem('userId', data.user.id);
+      }
+      
       return { data, error: null };
     } catch (error) {
       return { data: null, error };
@@ -87,6 +105,10 @@ export function AuthProvider({ children }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
+      // Remover o ID do usuário do localStorage
+      localStorage.removeItem('userId');
+      
       return { error: null };
     } catch (error) {
       return { error };
