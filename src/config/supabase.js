@@ -80,9 +80,19 @@ export const chats = {
   },
 
   create: async (title) => {
+    // Obtém o usuário atual de forma assíncrona
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return { data: null, error: new Error('Usuário não autenticado') };
+    }
+    
     const { data, error } = await supabase
       .from('chats')
-      .insert([{ title }])
+      .insert([{ 
+        title,
+        user_id: user.id
+      }])
       .select()
       .single();
     return { data, error };
