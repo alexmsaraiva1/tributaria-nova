@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { MessageSquareText, Mail, Lock, Eye, EyeOff, ArrowRight, Check, ArrowLeft } from 'lucide-react';
 
 export function LoginForm() {
   const { signIn } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -16,27 +17,22 @@ export function LoginForm() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    console.log('Tentando login com:', { email });
 
     try {
       const { data, error } = await signIn(email, password);
-      console.log('Resposta do login:', { data, error });
       
       if (error) throw error;
       
-      // Redirecionar para a página inicial/app após login bem-sucedido
-      window.location.href = '/app';
+      // Redirecionar para a página do app após login bem-sucedido
+      navigate('/app');
     } catch (error) {
-      console.error('Erro no login:', error);
-      setError(`Email ou senha inválidos: ${error.message || error.toString() || 'Erro desconhecido'}`);
+      setError(`Email ou senha inválidos: ${error.message || 'Tente novamente'}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   return (
     <div className="min-h-screen flex">

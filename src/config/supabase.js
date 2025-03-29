@@ -4,27 +4,13 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Imprime as variáveis para depuração
-console.log('Configuração do Supabase:');
-console.log('URL:', supabaseUrl);
-console.log('Key disponível:', !!supabaseAnonKey);
-
 // Verifica se as variáveis existem
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('ERRO: Variáveis de ambiente do Supabase não encontradas!');
   throw new Error('Supabase URL e Anon Key são necessários');
 }
 
 // Cria o cliente Supabase
-let supabase;
-try {
-  console.log('Criando cliente Supabase...');
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
-  console.log('Cliente Supabase criado com sucesso!');
-} catch (error) {
-  console.error('ERRO ao criar cliente Supabase:', error);
-  throw error;
-}
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Exporta o cliente
 export { supabase };
@@ -35,9 +21,7 @@ export const auth = {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: metadata,
-      },
+      options: { data: metadata },
     });
     return { data, error };
   },

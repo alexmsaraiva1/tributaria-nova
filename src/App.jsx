@@ -10,15 +10,10 @@ const TributarIA = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   
-  // Verifica autenticação ao carregar
+  // Redireciona para a app se autenticado
   useEffect(() => {
-    if (!loading) {
-      if (user) {
-        console.log('Usuário autenticado:', user);
-        navigate('/app');
-      } else {
-        console.log('Usuário não autenticado');
-      }
+    if (!loading && user) {
+      navigate('/app');
     }
   }, [user, loading, navigate]);
   
@@ -32,21 +27,19 @@ const TributarIA = () => {
       );
     }
     
-    if (!user) {
-      return <Navigate to="/login" />;
-    }
-    
-    return children;
+    return user ? children : <Navigate to="/login" />;
   };
   
-  // Renderização principal com rotas
+  // Spinner de carregamento
+  const LoadingSpinner = () => (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  );
+  
   return (
     <div className="min-h-screen bg-gray-100">
-      {loading ? (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      ) : (
+      {loading ? <LoadingSpinner /> : (
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginForm />} />

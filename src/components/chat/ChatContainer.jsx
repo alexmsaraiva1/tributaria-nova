@@ -4,6 +4,7 @@ import { useChat } from '../../contexts/ChatContext';
 import ChatList from './ChatList';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
+import { LogOut } from 'lucide-react';
 
 export default function ChatContainer() {
   const { user, profile, signOut } = useAuth();
@@ -12,20 +13,20 @@ export default function ChatContainer() {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200">
+      <div className="w-64 bg-white border-r border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">{profile?.full_name}</h2>
-              <p className="text-sm text-gray-500">{user?.email}</p>
+            <div className="truncate">
+              <h2 className="text-lg font-semibold truncate">{profile?.full_name || user?.email}</h2>
+              <p className="text-sm text-gray-500 truncate">{user?.email}</p>
             </div>
             <button
               onClick={signOut}
-              className="text-gray-500 hover:text-gray-700"
+              className="p-1.5 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              aria-label="Sair"
+              title="Sair"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V4a1 1 0 00-1-1H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 6.707 6.293a1 1 0 00-1.414 1.414L8.586 11l-3.293 3.293a1 1 0 101.414 1.414L10 12.414l3.293 3.293a1 1 0 001.414-1.414L11.414 11l3.293-3.293z" clipRule="evenodd" />
-              </svg>
+              <LogOut size={18} />
             </button>
           </div>
         </div>
@@ -33,16 +34,16 @@ export default function ChatContainer() {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {currentChat ? (
           <>
-            <div className="p-4 border-b border-gray-200 bg-white">
-              <h2 className="text-lg font-semibold">{currentChat.title}</h2>
+            <div className="p-4 border-b border-gray-200 bg-white shadow-sm">
+              <h2 className="text-lg font-semibold truncate">{currentChat.title}</h2>
             </div>
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
               <ChatMessages />
             </div>
-            <div className="p-4 border-t border-gray-200 bg-white">
+            <div className="p-3 border-t border-gray-200 bg-white">
               <ChatInput />
             </div>
           </>
@@ -51,7 +52,12 @@ export default function ChatContainer() {
             {loading ? (
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             ) : (
-              <p className="text-gray-500">Selecione ou crie uma nova conversa</p>
+              <div className="text-center p-6">
+                <p className="text-gray-500 mb-2">Selecione ou crie uma nova conversa</p>
+                <p className="text-sm text-gray-400">
+                  Todas as perguntas e respostas sobre a reforma tributária ficam salvas no histórico.
+                </p>
+              </div>
             )}
           </div>
         )}
