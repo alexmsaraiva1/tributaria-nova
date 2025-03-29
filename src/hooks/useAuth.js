@@ -7,9 +7,18 @@ export function useAuth() {
 
   useEffect(() => {
     // Verifica o usuário atual
-    const { data: { user } } = supabase.auth.getUser()
-    setUser(user)
-    setLoading(false)
+    const fetchUser = async () => {
+      try {
+        const { data } = await supabase.auth.getUser()
+        setUser(data.user)
+      } catch (error) {
+        console.error('Erro ao buscar usuário:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchUser()
 
     // Inscreve para mudanças na autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {

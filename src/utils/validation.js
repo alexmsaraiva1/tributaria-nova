@@ -5,9 +5,8 @@ export const validateEmail = (email) => {
 };
 
 export const validatePassword = (password) => {
-  // Mínimo 8 caracteres, pelo menos uma letra maiúscula, uma minúscula e um número
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-  return passwordRegex.test(password);
+  // Simplificado: pelo menos 6 caracteres
+  return password && password.length >= 6;
 };
 
 export const validatePhone = (phone) => {
@@ -47,12 +46,8 @@ export const validateRegistrationForm = (formData) => {
     errors.email = 'Email inválido';
   }
 
-  if (!formData.username || formData.username.length < 3) {
-    errors.username = 'Nome de usuário deve ter pelo menos 3 caracteres';
-  }
-
   if (!validatePassword(formData.password)) {
-    errors.password = 'Senha deve ter pelo menos 8 caracteres, uma letra maiúscula, uma minúscula e um número';
+    errors.password = 'Senha deve ter pelo menos 6 caracteres';
   }
 
   if (formData.password !== formData.confirmPassword) {

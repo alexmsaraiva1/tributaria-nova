@@ -1,88 +1,17 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, Building, BookOpen, Calculator, TrendingUp, ChevronRight, MessageSquareText, LogIn, UserPlus, ShieldCheck, Clock, BarChart, Lightbulb, UserCheck, ChevronDown } from 'lucide-react';
-import FormErrors from './FormErrors';
-import { validateRegistrationForm, sanitizeInput } from '../utils/validation';
-import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
 
 const LandingPage = () => {
-  const { signIn, signUp } = useAuth();
   const { plans } = useSubscription();
-  const [showLogin, setShowLogin] = useState(true);
-  const [loading, setLoading] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
-    email: '',
-    username: '',
-    password: '',
-    confirmPassword: '',
-    acceptTerms: false
-  });
-  const [formErrors, setFormErrors] = useState({});
 
   const toggleFaq = (index) => {
     if (openFaq === index) {
       setOpenFaq(null);
     } else {
       setOpenFaq(index);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-    // Limpa o erro do campo quando o usuário começa a digitar
-    if (formErrors[name]) {
-      setFormErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setFormErrors({});
-
-    try {
-      const { error } = await signIn({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (error) throw error;
-    } catch (error) {
-      setFormErrors({
-        auth: 'Email ou senha inválidos'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setFormErrors({});
-
-    try {
-      const { error } = await signUp({
-        email: formData.email,
-        password: formData.password,
-        fullName: formData.fullName,
-        phone: formData.phone,
-      });
-
-      if (error) throw error;
-    } catch (error) {
-      setFormErrors({
-        auth: 'Erro ao criar conta. Por favor, tente novamente.'
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -127,20 +56,20 @@ const LandingPage = () => {
             <h1 className="ml-2 text-xl font-bold">tributarIA</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <button 
-              onClick={() => setShowLogin(true)}
+            <Link 
+              to="/login"
               className="px-4 py-2 text-blue-600 hover:text-blue-800 font-medium flex items-center"
             >
               <LogIn size={18} className="mr-1" />
               Entrar
-            </button>
-            <button 
-              onClick={() => setShowLogin(false)}
+            </Link>
+            <Link 
+              to="/register"
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium flex items-center"
             >
               <UserPlus size={18} className="mr-1" />
               Criar conta
-            </button>
+            </Link>
           </div>
         </div>
       </nav>
@@ -154,175 +83,56 @@ const LandingPage = () => {
               Tire todas as suas dúvidas sobre a reforma tributária brasileira com um assistente de IA especializado e focado em contadores e empresários.
             </p>
             <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 animate-fadeIn delay-400">
-              <button 
-                onClick={() => setShowLogin(false)}
+              <Link 
+                to="/register"
                 className="px-6 py-3 bg-white text-blue-600 rounded-md hover:bg-gray-100 font-bold flex items-center justify-center"
               >
                 Começar agora
                 <ChevronRight size={20} className="ml-1" />
-              </button>
-              <button 
-                onClick={() => setShowLogin(true)}
+              </Link>
+              <Link 
+                to="/login"
                 className="px-6 py-3 bg-blue-700 text-white rounded-md hover:bg-blue-900 font-bold flex items-center justify-center"
               >
                 Acessar minha conta
                 <ArrowRight size={20} className="ml-1" />
-              </button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Formulário de Login/Registro */}
-      <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-        <div className="flex justify-between mb-6">
-          <button
-            className={`flex-1 py-2 text-center ${showLogin ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
-            onClick={() => setShowLogin(true)}
-          >
-            Login
-          </button>
-          <button
-            className={`flex-1 py-2 text-center ${!showLogin ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
-            onClick={() => setShowLogin(false)}
-          >
-            Cadastro
-          </button>
-        </div>
-
-        <FormErrors errors={formErrors} />
-
-        <form onSubmit={showLogin ? handleLogin : handleRegister}>
-          {!showLogin && (
-            <>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="fullName">
-                  Nome Completo
-                </label>
-                <input
-                  type="text"
-                  id="fullName"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phone">
-                  Telefone
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-              </div>
-            </>
-          )}
-
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-              Senha
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          {!showLogin && (
-            <div className="mb-6">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="acceptTerms"
-                  checked={formData.acceptTerms}
-                  onChange={handleInputChange}
-                  className="mr-2"
-                  required
-                />
-                <span className="text-sm text-gray-600">
-                  Aceito os termos de uso e política de privacidade
-                </span>
-              </label>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 disabled:opacity-50"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Processando...
-              </span>
-            ) : (
-              showLogin ? 'Entrar' : 'Criar Conta'
-            )}
-          </button>
-        </form>
-      </div>
-
-      {/* Benefícios */}
-      <section className="py-16 bg-white">
+      {/* Por que usar a tributarIA? */}
+      <section id="beneficios" className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Por que usar a tributarIA?</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-6 bg-gray-50 rounded-lg shadow-sm">
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="text-blue-600 mb-4">
-                <ShieldCheck size={48} />
+                <ShieldCheck size={40} />
               </div>
-              <h3 className="text-xl font-bold mb-3">Respostas Precisas</h3>
+              <h3 className="text-xl font-bold mb-2">Respostas Precisas</h3>
               <p className="text-gray-600">
-                Obtenha informações confiáveis e atualizadas sobre a reforma tributária direto de um assistente especializado.
+                Obtenha informações confiáveis e atualizadas sobre a reforma tributária direta de um assistente especializado.
               </p>
             </div>
-            <div className="p-6 bg-gray-50 rounded-lg shadow-sm">
+            
+            <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="text-blue-600 mb-4">
-                <Clock size={48} />
+                <Clock size={40} />
               </div>
-              <h3 className="text-xl font-bold mb-3">Economize Tempo</h3>
+              <h3 className="text-xl font-bold mb-2">Economize Tempo</h3>
               <p className="text-gray-600">
-                Encontre respostas instantaneamente, sem precisar pesquisar em documentos extensos ou consultar especialistas.
+                Encontre respostas instantaneamente, sem precisar pesquisar em documentos extensos ou aguardar consultas.
               </p>
             </div>
-            <div className="p-6 bg-gray-50 rounded-lg shadow-sm">
+            
+            <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="text-blue-600 mb-4">
-                <BarChart size={48} />
+                <BarChart size={40} />
               </div>
-              <h3 className="text-xl font-bold mb-3">Informações Atualizadas</h3>
+              <h3 className="text-xl font-bold mb-2">Informações Atualizadas</h3>
               <p className="text-gray-600">
                 Mantenha-se informado com as últimas atualizações sobre a reforma tributária e suas implicações.
               </p>
@@ -331,63 +141,63 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Para quem */}
-      <section className="py-16 bg-gray-50">
+      {/* Para quem é a tributarIA? */}
+      <section id="publico-alvo" className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Para quem é a tributarIA?</h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="p-6 bg-white rounded-lg shadow-sm">
-              <div className="flex items-start">
-                <div className="text-blue-600 mr-4">
-                  <Building size={36} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-3">Contadores</h3>
-                  <p className="text-gray-600 mb-4">
-                    Atualize-se rapidamente sobre as mudanças tributárias e ofereça orientações precisas aos seus clientes sem longas pesquisas.
-                  </p>
-                  <ul className="space-y-2">
-                    <li className="flex items-center">
-                      <CheckCircle2 size={20} className="text-green-500 mr-2" />
-                      <span>Respostas específicas para dúvidas técnicas</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle2 size={20} className="text-green-500 mr-2" />
-                      <span>Interpretação de mudanças na legislação</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle2 size={20} className="text-green-500 mr-2" />
-                      <span>Suporte para aconselhamento de clientes</span>
-                    </li>
-                  </ul>
-                </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="flex">
+              <div className="mr-4 text-blue-600">
+                <Building size={36} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-3">Contadores</h3>
+                <ul className="space-y-3">
+                  <li className="flex">
+                    <CheckCircle2 className="text-green-500 mr-2 flex-shrink-0" size={20} />
+                    <span>Atualize-se rapidamente sobre as mudanças tributárias e informe seus clientes</span>
+                  </li>
+                  <li className="flex">
+                    <CheckCircle2 className="text-green-500 mr-2 flex-shrink-0" size={20} />
+                    <span>Tenha um assistente especializado para resolver dúvidas pontuais</span>
+                  </li>
+                  <li className="flex">
+                    <CheckCircle2 className="text-green-500 mr-2 flex-shrink-0" size={20} />
+                    <span>Interpretação de mudanças na legislação</span>
+                  </li>
+                  <li className="flex">
+                    <CheckCircle2 className="text-green-500 mr-2 flex-shrink-0" size={20} />
+                    <span>Saiba para automaticamente as alterações legislativas</span>
+                  </li>
+                </ul>
               </div>
             </div>
-            <div className="p-6 bg-white rounded-lg shadow-sm">
-              <div className="flex items-start">
-                <div className="text-blue-600 mr-4">
-                  <UserCheck size={36} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-3">Empresários</h3>
-                  <p className="text-gray-600 mb-4">
-                    Entenda como a reforma tributária afetará seu negócio e quais estratégias adotar para se adaptar às mudanças.
-                  </p>
-                  <ul className="space-y-2">
-                    <li className="flex items-center">
-                      <CheckCircle2 size={20} className="text-green-500 mr-2" />
-                      <span>Impactos da reforma no seu setor</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle2 size={20} className="text-green-500 mr-2" />
-                      <span>Preparação para novas exigências</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle2 size={20} className="text-green-500 mr-2" />
-                      <span>Planejamento tributário estratégico</span>
-                    </li>
-                  </ul>
-                </div>
+            
+            <div className="flex">
+              <div className="mr-4 text-blue-600">
+                <UserCheck size={36} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-3">Empresários</h3>
+                <ul className="space-y-3">
+                  <li className="flex">
+                    <CheckCircle2 className="text-green-500 mr-2 flex-shrink-0" size={20} />
+                    <span>Compreenda como a reforma tributária afetará seu negócio</span>
+                  </li>
+                  <li className="flex">
+                    <CheckCircle2 className="text-green-500 mr-2 flex-shrink-0" size={20} />
+                    <span>Planejamento eficiente para a nova legislação</span>
+                  </li>
+                  <li className="flex">
+                    <CheckCircle2 className="text-green-500 mr-2 flex-shrink-0" size={20} />
+                    <span>Prepare-se para as mudanças antecipadamente</span>
+                  </li>
+                  <li className="flex">
+                    <CheckCircle2 className="text-green-500 mr-2 flex-shrink-0" size={20} />
+                    <span>Poupe tempo e dinheiro com informações simplificadas</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
@@ -395,26 +205,35 @@ const LandingPage = () => {
       </section>
 
       {/* Como funciona */}
-      <section className="py-16 bg-white">
+      <section id="como-funciona" className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Como funciona</h2>
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="p-6 bg-gray-50 rounded-lg shadow-sm text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white text-xl font-bold mb-4">1</div>
-              <h3 className="text-xl font-bold mb-3">Cadastre-se</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="bg-blue-100 text-blue-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl font-bold">1</span>
+              </div>
+              <h3 className="text-xl font-bold mb-3">Crie sua conta em segundos</h3>
               <p className="text-gray-600">
-                Crie sua conta em segundos e tenha acesso imediato ao nosso assistente especializado.
+                Preencha o formulário de cadastro e tenha acesso instantâneo à plataforma.
               </p>
             </div>
-            <div className="p-6 bg-gray-50 rounded-lg shadow-sm text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white text-xl font-bold mb-4">2</div>
+            
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="bg-blue-100 text-blue-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl font-bold">2</span>
+              </div>
               <h3 className="text-xl font-bold mb-3">Faça suas perguntas</h3>
               <p className="text-gray-600">
                 Pergunte qualquer coisa sobre a reforma tributária em linguagem natural e conversacional.
               </p>
             </div>
-            <div className="p-6 bg-gray-50 rounded-lg shadow-sm text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-600 text-white text-xl font-bold mb-4">3</div>
+            
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="bg-blue-100 text-blue-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl font-bold">3</span>
+              </div>
               <h3 className="text-xl font-bold mb-3">Receba respostas</h3>
               <p className="text-gray-600">
                 Obtenha respostas claras e precisas, com referências às fontes oficiais quando necessário.
@@ -424,168 +243,155 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Preço */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+      {/* Planos */}
+      <section id="planos" className="py-16 bg-blue-600 text-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Escolha o plano ideal para você</h2>
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Plano Básico */}
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden text-gray-800 transform transition-transform hover:scale-105">
-                <div className="bg-blue-600 p-4 text-white text-center">
-                  <h3 className="text-xl font-bold">Plano Básico</h3>
+          <h2 className="text-3xl font-bold text-center mb-4">Escolha o plano ideal para você</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 max-w-5xl mx-auto">
+            {/* Plano Básico */}
+            <div className="bg-white text-gray-800 rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition duration-300">
+              <div className="p-6">
+                <h3 className="text-2xl font-bold mb-4 text-center">Plano Básico</h3>
+                <div className="text-center mb-6">
+                  <span className="text-4xl font-bold">R$ 47</span>
+                  <span className="text-gray-500 ml-2">/mês</span>
                 </div>
-                <div className="p-8">
-                  <div className="flex items-center justify-center mb-4">
-                    <span className="text-4xl font-bold">R$ 47</span>
-                    <span className="text-gray-500 ml-2">/mês</span>
-                  </div>
-                  <p className="text-gray-600 text-center mb-6">
-                    Perfeito para começar a usar a tributarIA
-                  </p>
-                  <ul className="space-y-3 mb-8">
-                    <li className="flex items-center">
-                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                      <span>Perguntas ilimitadas</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                      <span>Histórico de conversas salvo</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                      <span>Atualizações contínuas</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                      <span>Suporte por email</span>
-                    </li>
-                  </ul>
-                  <button 
-                    onClick={() => setShowLogin(false)}
-                    className="w-full py-3 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold transition-colors"
-                  >
-                    Começar agora
-                  </button>
-                </div>
-              </div>
-              
-              {/* Plano Premium */}
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden text-gray-800 transform transition-transform hover:scale-105 border-2 border-yellow-400 relative">
-                {/* Faixa Recomendado na diagonal */}
-                <div className="absolute top-0 right-0 bg-yellow-400 text-blue-900 text-xs font-medium px-4 py-0.5 origin-top-right rotate-45 transform translate-y-4 translate-x-8 opacity-80 z-10">
-                  RECOMENDADO
-                </div>
-                
-                <div className="bg-gradient-to-r from-blue-700 to-blue-900 p-4 text-white text-center">
-                  <h3 className="text-xl font-bold">Plano Premium</h3>
-                </div>
-                <div className="p-8">
-                  <div className="flex items-center justify-center mb-4">
-                    <span className="text-4xl font-bold">R$ 97</span>
-                    <span className="text-gray-500 ml-2">/mês</span>
-                  </div>
-                  <p className="text-gray-600 text-center mb-6">
-                    Acesso completo a todos os recursos avançados
-                  </p>
-                  <ul className="space-y-3 mb-8">
-                    <li className="flex items-center">
-                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                      <span>Tudo do plano básico</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                      <span>Biblioteca de referências oficiais</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                      <span>Análises comparativas fiscais</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                      <span>Simulações práticas de cenários</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                      <span>Alertas de mudanças na legislação</span>
-                    </li>
-                    <li className="flex items-center">
-                      <CheckCircle2 size={24} className="text-green-500 mr-2" />
-                      <span>Suporte prioritário</span>
-                    </li>
-                  </ul>
-                  <button 
-                    onClick={() => setShowLogin(false)}
-                    className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-md hover:from-blue-700 hover:to-blue-900 font-bold transition-colors"
-                  >
-                    Obter plano premium
-                  </button>
-                </div>
+                <p className="text-center text-sm text-gray-600 mb-6">
+                  Perfeito para começar a usar a tributarIA
+                </p>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-start">
+                    <CheckCircle2 className="text-green-500 mr-2 mt-1 flex-shrink-0" size={18} />
+                    <span>Perguntas ilimitadas</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle2 className="text-green-500 mr-2 mt-1 flex-shrink-0" size={18} />
+                    <span>Histórico de conversas salvo</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle2 className="text-green-500 mr-2 mt-1 flex-shrink-0" size={18} />
+                    <span>Atualizações contínuas</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle2 className="text-green-500 mr-2 mt-1 flex-shrink-0" size={18} />
+                    <span>Suporte por email</span>
+                  </li>
+                </ul>
+                <Link 
+                  to="/register"
+                  className="w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+                >
+                  Começar agora
+                </Link>
               </div>
             </div>
-            <p className="mt-8 text-sm opacity-80 text-center">
-              Cancele a qualquer momento. Sem compromisso de permanência.
-            </p>
+
+            {/* Plano Premium */}
+            <div className="bg-white text-gray-800 rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition duration-300 relative">
+              <div className="absolute top-0 right-0 transform rotate-45 translate-x-5 -translate-y-3 bg-yellow-400 text-black py-1 px-8 text-xs font-bold shadow-md">
+                RECOMENDADO
+              </div>
+              <div className="p-6">
+                <h3 className="text-2xl font-bold mb-4 text-center">Plano Premium</h3>
+                <div className="text-center mb-6">
+                  <span className="text-4xl font-bold">R$ 97</span>
+                  <span className="text-gray-500 ml-2">/mês</span>
+                </div>
+                <p className="text-center text-sm text-gray-600 mb-6">
+                  Acesso completo a todos os recursos avançados
+                </p>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-start">
+                    <CheckCircle2 className="text-green-500 mr-2 mt-1 flex-shrink-0" size={18} />
+                    <span>Tudo do plano básico</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle2 className="text-green-500 mr-2 mt-1 flex-shrink-0" size={18} />
+                    <span>Biblioteca de referências oficiais</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle2 className="text-green-500 mr-2 mt-1 flex-shrink-0" size={18} />
+                    <span>Análises comparativas fiscais</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle2 className="text-green-500 mr-2 mt-1 flex-shrink-0" size={18} />
+                    <span>Simulações práticas de cenários</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle2 className="text-green-500 mr-2 mt-1 flex-shrink-0" size={18} />
+                    <span>Alertas de mudanças na legislação</span>
+                  </li>
+                  <li className="flex items-start">
+                    <CheckCircle2 className="text-green-500 mr-2 mt-1 flex-shrink-0" size={18} />
+                    <span>Suporte prioritário</span>
+                  </li>
+                </ul>
+                <Link 
+                  to="/register"
+                  className="w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+                >
+                  Obter plano premium
+                </Link>
+              </div>
+            </div>
           </div>
+          
+          <p className="text-center text-sm mt-8 opacity-80">
+            Cancele a qualquer momento, sem compromissos de permanência.
+          </p>
         </div>
       </section>
 
-      {/* FAQ - Perguntas Frequentes */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Perguntas Frequentes</h2>
-            
-            <div className="space-y-6">
-              {faqs.map((faq, index) => (
-                <div 
-                  key={index} 
-                  className="bg-white rounded-lg shadow-sm overflow-hidden"
+      {/* FAQ */}
+      <section id="faq" className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <h2 className="text-3xl font-bold text-center mb-12">Perguntas Frequentes</h2>
+          
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+                <button
+                  className="w-full text-left p-4 bg-white flex justify-between items-center focus:outline-none"
+                  onClick={() => toggleFaq(index)}
                 >
-                  <button
-                    className="flex justify-between items-center w-full p-6 text-left"
-                    onClick={() => toggleFaq(index)}
-                  >
-                    <h3 className="text-lg font-semibold text-gray-800">{faq.question}</h3>
-                    <ChevronDown 
-                      className={`text-blue-600 transition-transform ${openFaq === index ? 'transform rotate-180' : ''}`} 
-                      size={20} 
-                    />
-                  </button>
-                  
-                  <div 
-                    className={`px-6 transition-all duration-300 ease-in-out ${
-                      openFaq === index ? 'pb-6 max-h-96' : 'max-h-0 overflow-hidden'
-                    }`}
-                  >
+                  <span className="font-medium text-gray-800">{faq.question}</span>
+                  <ChevronDown
+                    className={`transform transition-transform ${openFaq === index ? 'rotate-180' : ''}`}
+                    size={20}
+                  />
+                </button>
+                
+                {openFaq === index && (
+                  <div className="p-4 bg-gray-50 border-t border-gray-200">
                     <p className="text-gray-600">{faq.answer}</p>
                   </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="mt-12 text-center">
-              <button 
-                onClick={() => setShowLogin(false)}
-                className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold flex items-center mx-auto"
-              >
-                Comece a esclarecer suas dúvidas agora
-                <ChevronRight size={20} className="ml-1" />
-              </button>
-            </div>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-12">
+            <Link
+              to="/register"
+              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold inline-flex items-center"
+            >
+              Comece a esclarecer suas dúvidas agora
+              <ArrowRight size={20} className="ml-2" />
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-8">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <MessageSquareText size={24} />
-            <h2 className="ml-2 text-xl font-bold">tributarIA</h2>
+        <div className="container mx-auto px-4">
+          <div className="flex justify-center items-center mb-4">
+            <MessageSquareText size={28} />
+            <span className="ml-2 text-xl font-bold">tributarIA</span>
           </div>
-          <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} tributarIA. Todos os direitos reservados.
+          <p className="text-center text-sm text-gray-400">
+            © 2023 tributarIA. Todos os direitos reservados.
           </p>
         </div>
       </footer>

@@ -1,117 +1,109 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, profiles } from '../config/supabase';
+import { supabase } from '../config/supabase';
 
 const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    // Verificar sessão atual
-    checkUser();
-    
-    // Inscrever para mudanças de autenticação
-    const { data: { subscription } } = auth.onAuthStateChange((_event, session) => {
+    // Verifica o usuário atual e loga para depuração
+    console.log('Verificando usuário atual no Supabase');
+    supabase.auth.getUser()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Erro ao buscar usuário:', error);
+        } else {
+          console.log('Usuário atual:', data.user);
+          setUser(data.user);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Erro crítico ao buscar usuário:', err);
+        setLoading(false);
+      });
+
+    // Inscreve para mudanças na autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('Evento de autenticação:', _event, session?.user);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        loadUserProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
+      setLoading(false);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  async function checkUser() {
+  const signUp = async (email, password, metadata = {}) => {
+    console.log('Iniciando signUp no contexto:', { email, metadata });
     try {
-      const { session } = await auth.getSession();
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await loadUserProfile(session.user.id);
-      }
-    } catch (error) {
-      console.error('Erro ao verificar usuário:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loadUserProfile(userId) {
-    try {
-      const { data, error } = await profiles.get(userId);
-      if (error) throw error;
-      setProfile(data);
-    } catch (error) {
-      console.error('Erro ao carregar perfil:', error);
-    }
-  }
-
-  async function signIn({ email, password }) {
-    try {
-      const { data, error } = await auth.signIn({ email, password });
-      if (error) throw error;
-      return { data, error: null };
-    } catch (error) {
-      return { data: null, error };
-    }
-  }
-
-  async function signUp({ email, password, fullName, phone }) {
-    try {
-      const { data, error } = await auth.signUp({
+      const response = await supabase.auth.signUp({
         email,
         password,
-        full_name: fullName,
-        phone,
+        options: {
+          data: metadata
+        }
       });
-      if (error) throw error;
+      
+      console.log('Resposta do signUp:', response);
+      
+      const { data, error } = response;
+      if (error) {
+        console.error('Erro no signUp:', error);
+        throw error;
+      }
+      
       return { data, error: null };
     } catch (error) {
+      console.error('Exceção no signUp:', error);
       return { data: null, error };
     }
-  }
+  };
 
-  async function signOut() {
+  const signIn = async (email, password) => {
+    console.log('Iniciando signIn no contexto:', { email });
     try {
-      const { error } = await auth.signOut();
-      if (error) throw error;
-      setUser(null);
-      setProfile(null);
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error);
-    }
-  }
-
-  async function updateProfile(updates) {
-    try {
-      if (!user) throw new Error('Usuário não autenticado');
-      const { data, error } = await profiles.update(user.id, updates);
-      if (error) throw error;
-      setProfile(data);
+      const response = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      console.log('Resposta do signIn:', response);
+      
+      const { data, error } = response;
+      if (error) {
+        console.error('Erro no signIn:', error);
+        throw error;
+      }
+      
       return { data, error: null };
     } catch (error) {
+      console.error('Exceção no signIn:', error);
       return { data: null, error };
     }
-  }
+  };
 
-  const value = {
-    user,
-    profile,
-    loading,
-    signIn,
-    signUp,
-    signOut,
-    updateProfile,
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      return { error: null };
+    } catch (error) {
+      console.error('Erro no signOut:', error);
+      return { error };
+    }
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      signUp,
+      signIn,
+      signOut
+    }}>
+      {children}
     </AuthContext.Provider>
   );
 }
