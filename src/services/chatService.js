@@ -4,6 +4,26 @@ import axios from 'axios';
 const WEBHOOK_URL = "https://webhooks.mllancamentos.com.br/webhook/demo-tributaria";
 
 /**
+ * Formata o texto da resposta para markdown adequado
+ * @param {string} text - Texto original 
+ * @returns {string} - Texto formatado
+ */
+const formatResponseText = (text) => {
+  if (!text) return "";
+  
+  // Substitui as marcações "### Número. ..." por "## Número. ..." para títulos de seção
+  let formattedText = text.replace(/###\s+(\d+\.?\s+\*\*.*?\*\*)/g, "## $1");
+  
+  // Substitui "- " por "* " para listas
+  formattedText = formattedText.replace(/^-\s+/gm, "* ");
+  
+  // Garante espaçamento adequado entre parágrafos
+  formattedText = formattedText.replace(/\n{3,}/g, "\n\n");
+  
+  return formattedText;
+};
+
+/**
  * Serviço para lidar com chamadas à API do chatbot
  */
 const chatService = {
@@ -46,8 +66,11 @@ const chatService = {
         botResponseText = responseData.message || "Não foi possível obter uma resposta específica.";
       }
       
+      // Formata o texto para markdown adequado
+      const formattedText = formatResponseText(botResponseText);
+      
       return {
-        reply: botResponseText,
+        reply: formattedText,
         success: true
       };
     } catch (error) {

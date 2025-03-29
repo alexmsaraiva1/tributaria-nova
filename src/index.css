@@ -3,17 +3,37 @@
 @tailwind utilities;
 
 /* Estilos para o conteúdo markdown */
+.markdown-content h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+  color: #111827;
+}
+
+.markdown-content h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+  color: #1f2937;
+}
+
 .markdown-content h3 {
-  font-size: 1.25rem;
-  font-weight: bold;
+  font-size: 1.2rem;
+  font-weight: 600;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
+  color: #374151;
 }
 
 .markdown-content ul, 
 .markdown-content ol {
   margin-left: 1.5rem;
   margin-bottom: 1rem;
+  padding-left: 0.5rem;
 }
 
 .markdown-content ul {
@@ -24,12 +44,18 @@
   list-style-type: decimal;
 }
 
+.markdown-content li {
+  margin-bottom: 0.5rem;
+}
+
 .markdown-content p {
   margin-bottom: 0.75rem;
+  line-height: 1.5;
 }
 
 .markdown-content strong {
-  font-weight: bold;
+  font-weight: 700;
+  color: #111827;
 }
 
 /* Ajustes de responsividade para o markdown */
@@ -37,14 +63,7 @@
   width: 100%;
   overflow-wrap: break-word;
   word-wrap: break-word;
-}
-
-.markdown-content h1 {
-  font-size: 1.5rem;
-}
-
-.markdown-content h2 {
-  font-size: 1.3rem;
+  color: #374151;
 }
 
 /* Evitar que imagens ou tabelas ultrapassem a largura da tela */
@@ -59,6 +78,10 @@
 .markdown-content code {
   white-space: pre-wrap;
   word-break: break-word;
+  background-color: #f3f4f6;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
 }
 
 /* Correções para viewport móvel - apenas para o app */

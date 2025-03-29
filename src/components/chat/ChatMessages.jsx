@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useChat } from '../../contexts/ChatContext';
 import { User, Bot } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 export default function ChatMessages() {
   const { messages, loading } = useChat();
@@ -42,7 +43,15 @@ export default function ChatMessages() {
                 : 'bg-gray-100 text-gray-800'
             }`}
           >
-            <p className="whitespace-pre-wrap">{message.message}</p>
+            {message.role === 'user' ? (
+              <p className="whitespace-pre-wrap">{message.message}</p>
+            ) : (
+              <div className="markdown-content prose prose-sm max-w-none">
+                <ReactMarkdown>
+                  {message.message.replace(/###/g, "##").replace(/\*\*/g, "**")}
+                </ReactMarkdown>
+              </div>
+            )}
             {message.role === 'assistant' && message.sources && (
               <div className="mt-2 text-xs text-gray-500">
                 <p>Fontes:</p>
