@@ -20,6 +20,9 @@ const formatResponseText = (text) => {
   // Garante espaçamento adequado entre parágrafos
   formattedText = formattedText.replace(/\n{3,}/g, "\n\n");
   
+  // Remove qualquer texto que comece com "Fontes:" no final da mensagem
+  formattedText = formattedText.replace(/\n+Fontes:[\s\S]*$/, "");
+  
   return formattedText;
 };
 
@@ -113,12 +116,7 @@ const chatService = {
         
         resolve({
           reply,
-          success: true,
-          sources: [
-            'Lei Complementar nº 123/2006',
-            'Constituição Federal, art. 145-162',
-            'Proposta de Emenda à Constituição (PEC) 45/2019'
-          ]
+          success: true
         });
       }, delay);
     });

@@ -10,6 +10,7 @@ export function ChatProvider({ children }) {
   const [currentChat, setCurrentChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
   // Carregar chats quando o usuário mudar
   useEffect(() => {
@@ -104,6 +105,9 @@ export function ChatProvider({ children }) {
       // Adicionar a nova mensagem ao histórico
       setMessages(prev => [...prev, data]);
       
+      // Ativar o estado de digitação quando a mensagem do usuário é enviada
+      setIsTyping(true);
+      
       return { data, error: null };
     } catch (error) {
       return { data: null, error };
@@ -115,6 +119,9 @@ export function ChatProvider({ children }) {
     if (!message || !currentChat) return { data: null, error: new Error('Mensagem inválida ou nenhum chat selecionado') };
     
     try {
+      // Desativar o estado de digitação quando a resposta do assistente chegar
+      setIsTyping(false);
+      
       const { data, error } = await chats.sendMessage(currentChat.id, message, 'assistant');
       if (error) throw error;
       
@@ -123,6 +130,8 @@ export function ChatProvider({ children }) {
       
       return { data, error: null };
     } catch (error) {
+      // Certificar-se de desativar o estado de digitação em caso de erro
+      setIsTyping(false);
       return { data: null, error };
     }
   };
@@ -152,6 +161,7 @@ export function ChatProvider({ children }) {
     currentChat,
     messages,
     loading,
+    isTyping,
     setCurrentChat,
     createChat,
     sendMessage,

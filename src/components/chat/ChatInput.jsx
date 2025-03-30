@@ -4,7 +4,7 @@ import chatService from '../../services/chatService';
 import { Send } from 'lucide-react';
 
 export default function ChatInput() {
-  const { sendMessage, sendAssistantMessage, currentChat, loading } = useChat();
+  const { sendMessage, sendAssistantMessage, currentChat, loading, isTyping: contextIsTyping } = useChat();
   const [message, setMessage] = useState('');
   const [processingResponse, setProcessingResponse] = useState(false);
   const textareaRef = useRef(null);

@@ -2,16 +2,17 @@ import React, { useEffect, useRef } from 'react';
 import { useChat } from '../../contexts/ChatContext';
 import { User, Bot } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import TypingIndicator from './TypingIndicator';
 
 export default function ChatMessages() {
-  const { messages, loading } = useChat();
+  const { messages, loading, isTyping } = useChat();
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isTyping]);
 
-  if (loading) {
+  if (loading && messages.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
@@ -52,16 +53,6 @@ export default function ChatMessages() {
                 </ReactMarkdown>
               </div>
             )}
-            {message.role === 'assistant' && message.sources && (
-              <div className="mt-2 text-xs text-gray-500">
-                <p>Fontes:</p>
-                <ul className="list-disc list-inside">
-                  {message.sources.map((source, idx) => (
-                    <li key={idx}>{source}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
 
           {message.role === 'user' && (
@@ -73,6 +64,9 @@ export default function ChatMessages() {
           )}
         </div>
       ))}
+      
+      {/* Indicador de digitação */}
+      {isTyping && <TypingIndicator />}
       
       <div ref={messagesEndRef} />
     </div>
