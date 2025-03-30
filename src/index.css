@@ -124,6 +124,38 @@
     padding-left: 1rem !important;
     padding-right: 1rem !important;
   }
+
+  .markdown-content h1 {
+    font-size: 1.3rem;
+    margin-top: 1.2rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .markdown-content h2 {
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .markdown-content h3 {
+    font-size: 1rem;
+    margin-top: 0.8rem;
+    margin-bottom: 0.4rem;
+  }
+  
+  .markdown-content p {
+    font-size: 0.9rem;
+  }
+  
+  .markdown-content ul, 
+  .markdown-content ol {
+    margin-left: 1rem;
+    padding-left: 0.5rem;
+  }
+  
+  .markdown-content code {
+    font-size: 0.8rem;
+  }
 }
 
 /* Evitar que o teclado móvel cause scrolling indesejado */

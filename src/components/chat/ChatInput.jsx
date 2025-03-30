@@ -17,7 +17,7 @@ export default function ChatInput() {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     }
   };
 
@@ -84,20 +84,20 @@ export default function ChatInput() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Digite sua mensagem..."
-          className={`w-full resize-none rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 p-3 pr-12 min-h-[44px] max-h-[200px] ${isInputDisabled ? 'bg-gray-50 text-gray-500' : ''}`}
+          placeholder="Digite sua dúvida sobre a reforma tributária..."
+          className={`w-full resize-none rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 p-2 md:p-3 pr-10 min-h-[40px] md:min-h-[44px] max-h-[120px] text-sm md:text-base ${isInputDisabled ? 'bg-gray-50 text-gray-500' : ''}`}
           rows={1}
           disabled={isInputDisabled}
         />
         <button
           type="submit"
           disabled={!message.trim() || isInputDisabled}
-          className="absolute right-2 bottom-2 p-1.5 rounded-full text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+          className="absolute right-2 bottom-2 p-1 md:p-1.5 rounded-full text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
         >
           {loading || processingResponse ? (
             <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-blue-500 border-r-blue-500 border-b-transparent border-l-transparent"></div>
           ) : (
-            <Send size={18} />
+            <Send size={16} className="md:size-18" />
           )}
         </button>
       </div>

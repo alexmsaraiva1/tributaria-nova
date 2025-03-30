@@ -1,38 +1,18 @@
 import React from 'react';
 import { useChat } from '../../contexts/ChatContext';
-import { PlusCircle, MessageSquare } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 
-export default function ChatList() {
-  const { chatList, currentChat, loading, createChat, setCurrentChat } = useChat();
+export default function ChatList({ onChatSelect }) {
+  const { chatList, currentChat, loading, setCurrentChat } = useChat();
 
-  const handleCreateNewChat = async () => {
-    try {
-      // Cria um novo chat com título automático baseado na data
-      const dateStr = new Date().toLocaleDateString('pt-BR', { 
-        day: '2-digit', 
-        month: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-      await createChat(`Nova conversa ${dateStr}`);
-    } catch (error) {
-      console.error('Erro ao criar chat:', error);
-    }
+  const handleSelectChat = (chat) => {
+    setCurrentChat(chat);
+    // Chamar o callback onChatSelect, se fornecido
+    if (onChatSelect) onChatSelect(chat);
   };
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4">
-        <button
-          onClick={handleCreateNewChat}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center transition-colors"
-          disabled={loading}
-        >
-          <PlusCircle size={18} className="mr-2" />
-          Nova Conversa
-        </button>
-      </div>
-
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex items-center justify-center h-full">
@@ -48,7 +28,7 @@ export default function ChatList() {
             {chatList.map((chat) => (
               <button
                 key={chat.id}
-                onClick={() => setCurrentChat(chat)}
+                onClick={() => handleSelectChat(chat)}
                 className={`w-full px-4 py-2 text-left rounded-md transition-colors ${
                   currentChat?.id === chat.id
                     ? 'bg-blue-100 text-blue-800'
