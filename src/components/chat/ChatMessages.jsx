@@ -15,40 +15,40 @@ export default function ChatMessages() {
   if (loading && messages.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-blue-500 border-r-blue-500 border-b-transparent border-l-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
+    <div className="flex-1 overflow-y-auto p-2 space-y-2.5">
       {messages.map((message, index) => (
         <div
           key={message.id || index}
-          className={`flex items-start space-x-2 md:space-x-3 ${
+          className={`flex items-start space-x-2 ${
             message.role === 'user' ? 'justify-end' : 'justify-start'
           }`}
         >
           {message.role === 'assistant' && (
             <div className="flex-shrink-0">
-              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                <Bot size={message.role === 'assistant' ? 18 : 20} className="text-blue-600" />
+              <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
+                <Bot size={16} className="text-blue-600" />
               </div>
             </div>
           )}
           
           <div
-            className={`max-w-[80%] md:max-w-[70%] rounded-lg p-3 md:p-4 ${
+            className={`max-w-[85%] rounded-lg p-2.5 ${
               message.role === 'user'
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-800'
             }`}
           >
             {message.role === 'user' ? (
-              <p className="whitespace-pre-wrap text-sm md:text-base">{message.message}</p>
+              <p className="whitespace-pre-wrap text-sm">{message.message}</p>
             ) : (
               <div className="markdown-content prose prose-sm max-w-none">
-                <ReactMarkdown>
+                <ReactMarkdown className="text-sm">
                   {message.message.replace(/###/g, "##").replace(/\*\*/g, "**")}
                 </ReactMarkdown>
               </div>
@@ -57,8 +57,8 @@ export default function ChatMessages() {
 
           {message.role === 'user' && (
             <div className="flex-shrink-0">
-              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                <User size={message.role === 'user' ? 18 : 20} className="text-gray-600" />
+              <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                <User size={16} className="text-gray-600" />
               </div>
             </div>
           )}

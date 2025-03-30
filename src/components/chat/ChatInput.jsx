@@ -77,27 +77,27 @@ export default function ChatInput() {
   const isInputDisabled = loading || processingResponse || !currentChat;
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-end space-x-2">
-      <div className="flex-1 relative">
+    <form onSubmit={handleSubmit} className="flex items-end w-full">
+      <div className="flex-1 relative w-full">
         <textarea
           ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Digite sua dúvida sobre a reforma tributária..."
-          className={`w-full resize-none rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 p-2 md:p-3 pr-10 min-h-[40px] md:min-h-[44px] max-h-[120px] text-sm md:text-base ${isInputDisabled ? 'bg-gray-50 text-gray-500' : ''}`}
+          className={`w-full resize-none rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 p-2 pr-9 min-h-[40px] max-h-[120px] text-sm ${isInputDisabled ? 'bg-gray-50 text-gray-500' : ''}`}
           rows={1}
           disabled={isInputDisabled}
         />
         <button
           type="submit"
           disabled={!message.trim() || isInputDisabled}
-          className="absolute right-2 bottom-2 p-1 md:p-1.5 rounded-full text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+          className="absolute right-2 bottom-1.5 p-1 rounded-full text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
         >
           {loading || processingResponse ? (
             <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-blue-500 border-r-blue-500 border-b-transparent border-l-transparent"></div>
           ) : (
-            <Send size={16} className="md:size-18" />
+            <Send size={16} />
           )}
         </button>
       </div>
