@@ -4,7 +4,8 @@ import { useChat } from '../../contexts/ChatContext';
 import ChatList from './ChatList';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
-import { LogOut, ArrowLeft, MenuIcon, PlusCircle } from 'lucide-react';
+import { LogOut, ArrowLeft, MenuIcon, PlusCircle, MessageSquare } from 'lucide-react';
+import LogoTributaria from '../../assets/logo-tributaria';
 
 export default function ChatContainer() {
   const { user, profile, signOut } = useAuth();
@@ -59,9 +60,9 @@ export default function ChatContainer() {
         <div className={`${isMobile ? 'w-full' : 'w-64'} bg-white border-r border-gray-200 z-10 ${isMobile ? 'absolute inset-0' : 'relative'}`}>
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <div className="truncate">
-                <h2 className="text-lg font-semibold truncate">{profile?.full_name || user?.email}</h2>
-                <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+              <div className="flex items-center">
+                <LogoTributaria width={32} height={32} />
+                <h2 className="ml-2 text-lg font-semibold text-blue-600">tributarIA</h2>
               </div>
               <button
                 onClick={signOut}
@@ -72,6 +73,7 @@ export default function ChatContainer() {
                 <LogOut size={18} />
               </button>
             </div>
+            <div className="mt-2 text-sm text-gray-500 truncate">{profile?.full_name || user?.email}</div>
           </div>
           <div className="p-4">
             <button
@@ -101,7 +103,10 @@ export default function ChatContainer() {
                     <ArrowLeft size={20} />
                   </button>
                 )}
-                <h2 className="text-lg font-semibold truncate flex-1">{currentChat.title}</h2>
+                <div className="flex items-center flex-1">
+                  <MessageSquare size={18} className="mr-2 text-blue-600" />
+                  <h2 className="text-lg font-semibold truncate">{currentChat.title}</h2>
+                </div>
                 {isMobile && (
                   <button
                     onClick={handleNewChat}
@@ -133,6 +138,10 @@ export default function ChatContainer() {
                       <ArrowLeft size={24} />
                     </button>
                   )}
+                  <div className="flex justify-center mb-4">
+                    <LogoTributaria width={64} height={64} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-blue-600 mb-4">tributarIA</h3>
                   <p className="text-gray-500 mb-2">Selecione ou crie uma nova conversa</p>
                   <p className="text-sm text-gray-400">
                     Todas as perguntas e respostas sobre a reforma tributária ficam salvas no histórico.
