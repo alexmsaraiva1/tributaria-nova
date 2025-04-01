@@ -1,7 +1,10 @@
 import axios from 'axios';
 
-// URL do webhook fixa para o serviço mllancamentos.com.br
-const WEBHOOK_URL = "https://webhooks.mllancamentos.com.br/webhook/demo-tributaria";
+// URL do webhook da variável de ambiente, com fallback para URL de teste
+const WEBHOOK_URL = import.meta.env.VITE_CHAT_WEBHOOK_URL || "https://webhooks.mllancamentos.com.br/webhook/demo-tributaria";
+
+// Log para debug da URL usada
+console.log('Usando webhook URL:', WEBHOOK_URL);
 
 /**
  * Formata o texto da resposta para markdown adequado
@@ -46,7 +49,7 @@ const chatService = {
       const userId = localStorage.getItem('userId') || 'unknown';
       
       // Adiciona um timeout de 30 segundos
-      console.log('Enviando mensagem para webhook:', { message, chat_id: chatId, user_id: userId });
+      console.log('Enviando mensagem para webhook:', { message, chat_id: chatId, user_id: userId, url: WEBHOOK_URL });
       const response = await axios.post(WEBHOOK_URL, {
         message,
         chat_id: chatId,
@@ -81,19 +84,35 @@ const chatService = {
       // Processa a mensagem, que pode ser uma string ou um array de strings
       let botResponseText = "";
       
-      if (!responseData.message) {
-        console.error('Formato de resposta inválido:', responseData);
+      if (!responseData.message && typeof responseData === 'object') {
+        // Tenta encontrar a mensagem em outras propriedades comuns
+        if (responseData.reply || responseData.response || responseData.text || responseData.answer) {
+          botResponseText = responseData.reply || responseData.response || responseData.text || responseData.answer;
+        } else {
+          console.error('Formato de resposta inválido:', responseData);
+          return {
+            reply: "Formato de resposta inválido recebido do servidor. Por favor, tente novamente.",
+            success: false
+          };
+        }
+      } else if (typeof responseData === 'string') {
+        // A resposta é diretamente uma string
+        botResponseText = responseData;
+      } else if (responseData.message) {
+        // A resposta segue o formato padrão {message: ...}
+        if (Array.isArray(responseData.message)) {
+          // Junta todas as partes da mensagem
+          botResponseText = responseData.message.join('\n\n');
+        } else {
+          botResponseText = String(responseData.message);
+        }
+      } else {
+        // Se não conseguir processar a resposta de nenhuma forma conhecida
+        console.error('Resposta em formato desconhecido:', responseData);
         return {
-          reply: "Formato de resposta inválido recebido do servidor. Por favor, tente novamente.",
+          reply: "A resposta do servidor está em um formato que não conseguimos processar. Por favor, tente novamente.",
           success: false
         };
-      }
-      
-      if (Array.isArray(responseData.message)) {
-        // Junta todas as partes da mensagem
-        botResponseText = responseData.message.join('\n\n');
-      } else {
-        botResponseText = String(responseData.message);
       }
       
       // Formata o texto para markdown adequado
