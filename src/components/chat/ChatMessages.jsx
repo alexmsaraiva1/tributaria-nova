@@ -20,6 +20,17 @@ export default function ChatMessages() {
     );
   }
 
+  // Função segura para processar mensagens
+  const safeProcessMessage = (messageText) => {
+    try {
+      if (!messageText) return '';
+      return messageText.replace(/###/g, "##");
+    } catch (error) {
+      console.error('Erro ao processar mensagem:', error);
+      return 'Erro ao exibir a mensagem.';
+    }
+  };
+
   return (
     <div className="flex-1 overflow-y-auto p-2 space-y-2.5">
       {messages.map((message, index) => (
@@ -47,10 +58,14 @@ export default function ChatMessages() {
             {message.role === 'user' ? (
               <p className="whitespace-pre-wrap text-sm">{message.message}</p>
             ) : (
-              <div className="markdown-content prose prose-sm max-w-none">
-                <ReactMarkdown className="text-sm">
-                  {message.message.replace(/###/g, "##").replace(/\*\*/g, "**")}
-                </ReactMarkdown>
+              <div className="markdown-content prose prose-sm max-w-none text-gray-800">
+                {message.message ? (
+                  <ReactMarkdown className="text-sm break-words">
+                    {safeProcessMessage(message.message)}
+                  </ReactMarkdown>
+                ) : (
+                  <p className="text-sm">Carregando resposta...</p>
+                )}
               </div>
             )}
           </div>

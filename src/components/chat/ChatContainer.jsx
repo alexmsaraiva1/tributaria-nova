@@ -4,12 +4,12 @@ import { useChat } from '../../contexts/ChatContext';
 import ChatList from './ChatList';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
-import { LogOut, ArrowLeft, MenuIcon, PlusCircle, MessageSquare } from 'lucide-react';
+import { LogOut, ArrowLeft, MenuIcon, PlusCircle, MessageSquare, AlertTriangle } from 'lucide-react';
 import LogoTributaria from '../../assets/logo-tributaria';
 
 export default function ChatContainer() {
   const { user, profile, signOut } = useAuth();
-  const { currentChat, loading, createChat, setCurrentChat } = useChat();
+  const { currentChat, loading, createChat, setCurrentChat, error } = useChat();
   const [showSidebar, setShowSidebar] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -121,6 +121,15 @@ export default function ChatContainer() {
                   </button>
                 )}
               </div>
+              
+              {/* Mensagem de erro */}
+              {error && (
+                <div className="bg-red-50 border-l-4 border-red-400 p-2.5 text-sm text-red-700 flex items-start">
+                  <AlertTriangle size={18} className="mr-2 flex-shrink-0 mt-0.5" />
+                  <p>{error}</p>
+                </div>
+              )}
+              
               <div className="flex-1 overflow-y-auto bg-gray-50">
                 <ChatMessages />
               </div>
@@ -146,10 +155,25 @@ export default function ChatContainer() {
                     <LogoTributaria width={56} height={56} />
                   </div>
                   <h3 className="text-xl font-semibold text-blue-600 mb-3">tributarIA</h3>
-                  <p className="text-gray-600 mb-2">Selecione ou crie uma nova conversa</p>
-                  <p className="text-sm text-gray-500 px-6 mb-4">
-                    Todas as perguntas e respostas sobre a reforma tributária ficam salvas no histórico.
-                  </p>
+                  
+                  {/* Mensagem de erro na tela inicial */}
+                  {error ? (
+                    <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4 text-sm text-red-700 max-w-sm mx-auto">
+                      <div className="flex items-center mb-1">
+                        <AlertTriangle size={16} className="mr-1.5" />
+                        <p className="font-medium">Erro</p>
+                      </div>
+                      <p>{error}</p>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-gray-600 mb-2">Selecione ou crie uma nova conversa</p>
+                      <p className="text-sm text-gray-500 px-6 mb-4">
+                        Todas as perguntas e respostas sobre a reforma tributária ficam salvas no histórico.
+                      </p>
+                    </>
+                  )}
+                  
                   <button
                     onClick={handleNewChat}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"

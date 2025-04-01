@@ -11,6 +11,12 @@ export function ChatProvider({ children }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Limpar erros quando mudar de chat
+  useEffect(() => {
+    setError(null);
+  }, [currentChat]);
 
   // Carregar chats quando o usuário mudar
   useEffect(() => {
@@ -38,11 +44,13 @@ export function ChatProvider({ children }) {
     
     try {
       setLoading(true);
+      setError(null);
       const { data, error } = await chats.list();
       if (error) throw error;
       setChatList(data || []);
     } catch (error) {
       console.error('Erro ao carregar chats:', error);
+      setError('Não foi possível carregar as conversas. Por favor, tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -54,11 +62,13 @@ export function ChatProvider({ children }) {
     
     try {
       setLoading(true);
+      setError(null);
       const { data, error } = await chats.getMessages(chatId);
       if (error) throw error;
       setMessages(data || []);
     } catch (error) {
       console.error('Erro ao carregar mensagens:', error);
+      setError('Não foi possível carregar as mensagens. Por favor, tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -73,6 +83,7 @@ export function ChatProvider({ children }) {
     
     try {
       setLoading(true);
+      setError(null);
       const { data, error } = await chats.create(chatTitle);
       if (error) throw error;
       
@@ -83,6 +94,7 @@ export function ChatProvider({ children }) {
       return { data, error: null };
     } catch (error) {
       console.error('Erro ao criar chat:', error);
+      setError('Não foi possível criar uma nova conversa. Por favor, tente novamente.');
       return { data: null, error };
     } finally {
       setLoading(false);
@@ -99,6 +111,7 @@ export function ChatProvider({ children }) {
     }
     
     try {
+      setError(null);
       const { data, error } = await chats.sendMessage(currentChat.id, message.trim());
       if (error) throw error;
       
@@ -110,17 +123,28 @@ export function ChatProvider({ children }) {
       
       return { data, error: null };
     } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
+      setError('Não foi possível enviar a mensagem. Por favor, tente novamente.');
+      // Garantir que isTyping seja desativado em caso de erro
+      setIsTyping(false);
       return { data: null, error };
     }
   };
 
   // Função para adicionar resposta do assistente
   const sendAssistantMessage = async (message) => {
-    if (!message || !currentChat) return { data: null, error: new Error('Mensagem inválida ou nenhum chat selecionado') };
+    if (!message || !currentChat) {
+      setIsTyping(false); // Garantir que isTyping seja desativado
+      return { 
+        data: null, 
+        error: new Error('Mensagem inválida ou nenhum chat selecionado') 
+      };
+    }
     
     try {
       // Desativar o estado de digitação quando a resposta do assistente chegar
       setIsTyping(false);
+      setError(null);
       
       const { data, error } = await chats.sendMessage(currentChat.id, message, 'assistant');
       if (error) throw error;
@@ -130,6 +154,8 @@ export function ChatProvider({ children }) {
       
       return { data, error: null };
     } catch (error) {
+      console.error('Erro ao enviar resposta do assistente:', error);
+      setError('Não foi possível salvar a resposta. A resposta foi recebida, mas não foi salva no histórico.');
       // Certificar-se de desativar o estado de digitação em caso de erro
       setIsTyping(false);
       return { data: null, error };
@@ -141,6 +167,7 @@ export function ChatProvider({ children }) {
     if (!title?.trim() || !currentChat) return { success: false };
     
     try {
+      setError(null);
       // Implementar no futuro quando houver endpoint para atualizar chat
       // Por enquanto, atualizar apenas o estado local
       setChatList(prev => 
@@ -152,6 +179,8 @@ export function ChatProvider({ children }) {
       
       return { success: true };
     } catch (error) {
+      console.error('Erro ao atualizar título:', error);
+      setError('Não foi possível atualizar o título da conversa.');
       return { success: false, error };
     }
   };
@@ -162,6 +191,7 @@ export function ChatProvider({ children }) {
     messages,
     loading,
     isTyping,
+    error,
     setCurrentChat,
     createChat,
     sendMessage,

@@ -11,19 +11,24 @@ const WEBHOOK_URL = "https://webhooks.mllancamentos.com.br/webhook/demo-tributar
 const formatResponseText = (text) => {
   if (!text) return "";
   
-  // Substitui as marcações "### Número. ..." por "## Número. ..." para títulos de seção
-  let formattedText = text.replace(/###\s+(\d+\.?\s+\*\*.*?\*\*)/g, "## $1");
-  
-  // Substitui "- " por "* " para listas
-  formattedText = formattedText.replace(/^-\s+/gm, "* ");
-  
-  // Garante espaçamento adequado entre parágrafos
-  formattedText = formattedText.replace(/\n{3,}/g, "\n\n");
-  
-  // Remove qualquer texto que comece com "Fontes:" no final da mensagem
-  formattedText = formattedText.replace(/\n+Fontes:[\s\S]*$/, "");
-  
-  return formattedText;
+  try {
+    // Substitui as marcações "### Número. ..." por "## Número. ..." para títulos de seção
+    let formattedText = text.replace(/###\s+(\d+\.?\s+\*\*.*?\*\*)/g, "## $1");
+    
+    // Substitui "- " por "* " para listas
+    formattedText = formattedText.replace(/^-\s+/gm, "* ");
+    
+    // Garante espaçamento adequado entre parágrafos
+    formattedText = formattedText.replace(/\n{3,}/g, "\n\n");
+    
+    // Remove qualquer texto que comece com "Fontes:" no final da mensagem
+    formattedText = formattedText.replace(/\n+Fontes:[\s\S]*$/, "");
+    
+    return formattedText;
+  } catch (error) {
+    console.error('Erro ao formatar texto:', error);
+    return text || "";
+  }
 };
 
 /**
@@ -38,11 +43,14 @@ const chatService = {
    */
   sendMessageToAI: async (message, chatId) => {
     try {
+      const userId = localStorage.getItem('userId') || 'unknown';
+      
       // Adiciona um timeout de 30 segundos
+      console.log('Enviando mensagem para webhook:', { message, chat_id: chatId, user_id: userId });
       const response = await axios.post(WEBHOOK_URL, {
         message,
         chat_id: chatId,
-        user_id: localStorage.getItem('userId'),
+        user_id: userId,
         timestamp: new Date().toISOString()
       }, {
         headers: {
@@ -52,7 +60,18 @@ const chatService = {
         timeout: 30000 // 30 segundos
       });
       
+      console.log('Resposta recebida:', response.data);
+      
       let responseData = response.data;
+      
+      // Se a resposta for vazia ou inválida, usar um fallback
+      if (!responseData) {
+        console.error('Resposta vazia recebida do webhook');
+        return {
+          reply: "A resposta recebida está vazia. Por favor, tente novamente ou consulte fontes oficiais.",
+          success: false
+        };
+      }
       
       // Verifica se a resposta é um array e pega o primeiro item
       if (Array.isArray(responseData)) {
@@ -62,11 +81,19 @@ const chatService = {
       // Processa a mensagem, que pode ser uma string ou um array de strings
       let botResponseText = "";
       
+      if (!responseData.message) {
+        console.error('Formato de resposta inválido:', responseData);
+        return {
+          reply: "Formato de resposta inválido recebido do servidor. Por favor, tente novamente.",
+          success: false
+        };
+      }
+      
       if (Array.isArray(responseData.message)) {
         // Junta todas as partes da mensagem
         botResponseText = responseData.message.join('\n\n');
       } else {
-        botResponseText = responseData.message || "Não foi possível obter uma resposta específica.";
+        botResponseText = String(responseData.message);
       }
       
       // Formata o texto para markdown adequado
@@ -78,10 +105,15 @@ const chatService = {
       };
     } catch (error) {
       console.error('Erro ao enviar mensagem para o webhook:', error);
+      let errorMessage = "Estamos enfrentando dificuldades técnicas. Como alternativa, sugiro consultar o site da Receita Federal para informações oficiais sobre a reforma tributária.";
       
-      // Em caso de falha, retorna uma resposta de fallback
+      // Mensagem de erro mais específica para problemas de timeout
+      if (error.code === 'ECONNABORTED' || (error.message && error.message.includes('timeout'))) {
+        errorMessage = "O servidor demorou muito para responder. Isso pode ocorrer em momentos de alto tráfego. Por favor, tente novamente em alguns instantes.";
+      }
+      
       return {
-        reply: "Estamos enfrentando dificuldades técnicas. Como alternativa, sugiro consultar o site da Receita Federal para informações oficiais sobre a reforma tributária.",
+        reply: errorMessage,
         success: false,
         error: error.message
       };
